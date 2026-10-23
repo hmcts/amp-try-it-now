@@ -28,7 +28,9 @@ job is created, which needs the GitHub topic confirmed (Phase 1.3).
 ## set-actions-variables.sh
 
 Sets the per-environment Azure OIDC repository variables (`AZURE_CLIENT_ID_<ENV>`,
-`AZURE_SUBSCRIPTION_ID_<ENV>`, `AZURE_SUBSCRIPTION_<ENV>`) for sbox, aat and preview.
+`AZURE_SUBSCRIPTION_ID_<ENV>`, `AZURE_SUBSCRIPTION_<ENV>`) for **sbox, aat and demo** — the whole
+path for this service. Preview is deliberately not covered: it is CNP's ephemeral per-PR
+environment, and publishing an APIM product per PR into a shared instance is not wanted here.
 
 Ids, not secrets — OIDC removes the long-lived credential, not the identifier; trust comes from
 Azure matching the token's subject against a federated credential. Values were taken from repos
@@ -40,9 +42,12 @@ subscription is `DTS-SPS-STG`, neither of which follows from the environment nam
 ./platform-prs/set-actions-variables.sh
 ```
 
-Only **sbox** does anything today. The other two are inert until `apim/aat.tfvars` or
-`apim/preview.tfvars` exists, because the workflow builds its matrix from those filenames. Each
-also needs two federated subjects in `azure-github-federation-config` before it can authenticate.
+Only **sbox** does anything today. aat is inert until `apim/aat.tfvars` exists, because the
+workflow builds its matrix from those filenames, and each environment also needs two federated
+subjects in `azure-github-federation-config` before it can authenticate.
 
-Demo is absent on purpose: its appId is in no repo and its subscription name is not derivable, so
-both are a PlatOps ask.
+**Demo skips itself.** Its subscription id is known (`058bf954-…`, from the scopes on
+`DTS AMp Demo`), but the appId and the subscription name are not recorded anywhere and the name
+is not derivable — `aat` is `DTS-SPS-STG`, not `DTS-SPS-AAT`. Both are a PlatOps ask. The script
+guards on the `ASK-PLATOPS-` placeholders and skips rather than setting a value that would fail
+later with a confusing error; fill them in and the block runs.

@@ -9,9 +9,13 @@
 # Values taken from repos already deploying to each environment, and cross-checked against the
 # scopes on the matching app registration in azure-github-federation-config:
 #
-#   sbox     try-cp-crime-schedulingandlisting-courtschedule   DTS AMp Sandbox
-#   aat      api-cp-crime-schedulingandlisting-courtschedule   DTS AMp Staging   <- note the name
-#   preview  api-cp-crime-schedulingandlisting-courtschedule   DTS AMp Preview
+#   sbox   try-cp-crime-schedulingandlisting-courtschedule   DTS AMp Sandbox
+#   aat    api-cp-crime-schedulingandlisting-courtschedule   DTS AMp Staging   <- note the name
+#   demo   nothing has it                                    DTS AMp Demo      <- see below
+#
+# sbox -> aat -> demo is the whole path. Preview is deliberately not here: it is CNP's ephemeral
+# per-PR environment, and publishing a product per PR into a shared APIM instance is not what
+# this service wants.
 #
 # TWO THINGS THIS SCRIPT DOES NOT DO, and the variables are useless without them:
 #
@@ -22,9 +26,20 @@
 #      With the variables set but no subject, login fails with an AADSTS error naming the subject
 #      Azure rejected - a different failure from the empty-client-id one, and progress.
 #
-# Demo is deliberately absent: its appId is not recorded in any repo and its subscription name is
-# not derivable (aat is DTS-SPS-STG, not DTS-SPS-AAT), so both are a PlatOps ask. Try It Now
-# stops at demo - there is no prod set and there must not be one.
+# DEMO IS INCOMPLETE ON PURPOSE. Its subscription id is known - taken from the scopes on the
+# DTS AMp Demo app registration, the same way the sbox/aat/preview ids were derived and verified
+# against their repo variables. The other two are not:
+#
+#   AZURE_CLIENT_ID_DEMO     the appId of DTS AMp Demo. Terraform creates it; it is in no file and
+#                            no repo holds it, because nothing has ever deployed to demo.
+#   AZURE_SUBSCRIPTION_DEMO  the subscription NAME. Do not guess - sbox is DTS-SPS-SBOX and
+#                            preview is DTS-SPS-PREVIEW, but aat is DTS-SPS-STG, so the pattern
+#                            does not hold.
+#
+# Both are a PlatOps ask. Fill them in below and the demo block runs; until then it skips itself
+# rather than setting a placeholder that would fail later with a confusing error.
+#
+# Demo is the LAST environment. There is no prod set here and there must not be one.
 #
 # Idempotent: gh variable set overwrites.
 
@@ -52,11 +67,16 @@ set_env_vars AAT \
   70bea6e3-384f-4cf4-b551-743a78d716cd \
   DTS-SPS-STG
 
-# Inert until apim/preview.tfvars exists.
-set_env_vars PREVIEW \
-  bfcb14a6-cf19-4bdc-93b7-4f32da62b23e \
-  7cfd7e05-06a1-4d9b-a426-db304bc99aab \
-  DTS-SPS-PREVIEW
+# Inert until apim/demo.tfvars exists, and skipped entirely until PlatOps supply the two unknowns.
+DEMO_CLIENT_ID="ASK-PLATOPS-appId-of-DTS-AMp-Demo"
+DEMO_SUBSCRIPTION="ASK-PLATOPS-subscription-name"
+DEMO_SUBSCRIPTION_ID="058bf954-ac1f-462b-bca4-42a30314bd74"   # known: from DTS AMp Demo's scopes
+
+if [[ "$DEMO_CLIENT_ID" == ASK-PLATOPS-* || "$DEMO_SUBSCRIPTION" == ASK-PLATOPS-* ]]; then
+  echo "--- DEMO: skipped, still waiting on PlatOps for the appId and subscription name ---"
+else
+  set_env_vars DEMO "$DEMO_CLIENT_ID" "$DEMO_SUBSCRIPTION_ID" "$DEMO_SUBSCRIPTION"
+fi
 
 echo
 echo "--- now set on ${REPO} ---"
