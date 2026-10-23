@@ -116,6 +116,35 @@ undo what a team published.
 Startup fails if an API is registered under `ENTRA` without an audience. A blank audience would
 accept a token minted for any resource, so the pod stops rather than quietly widening what it trusts.
 
+## Publishing an API to APIM in a new environment
+
+`apim/` registers one APIM product and API per sandbox, applied by
+`.github/workflows/terraform-apim.yaml`. Promoting to an environment it has not run in before
+takes **three** changes, and the workflow fails at Azure login — before terraform is evaluated at
+all — if any one of them is missing:
+
+1. **`apim/<env>.tfvars`.** The workflow builds its matrix from these filenames, so the file is
+   what makes the environment exist as far as CI is concerned. It also decides the variable names
+   in step 2: `demo.tfvars` -> `*_DEMO`.
+2. **Three GitHub Actions repository variables**, named for that environment:
+   `AZURE_CLIENT_ID_<ENV>`, `AZURE_SUBSCRIPTION_ID_<ENV>`, `AZURE_SUBSCRIPTION_<ENV>`. They are
+   ids, not secrets. Each environment has its **own** app registration and therefore its own
+   client id, so these cannot be copied between environments. `TFSTATE_STORAGE_ACCOUNT_NONPROD`
+   is an organisation variable and is inherited; the tenant id is defaulted by the reusable
+   workflow and is not set here.
+3. **Two federated subjects** in `hmcts/azure-github-federation-config`'s
+   `app-registrations.yaml`, under that environment's `DTS AMp <Env>` registration —
+   `:pull_request` and `:ref:refs/heads/master`. Without these Azure refuses the OIDC token even
+   though the variables are set.
+
+The naming is not uniform and guessing it wastes an afternoon: the **aat** registration is called
+`DTS AMp Staging`, and its subscription is `DTS-SPS-STG` rather than `DTS-SPS-AAT`. Take the
+values from a repo that already deploys to that environment rather than inferring them —
+`api-cp-crime-schedulingandlisting-courtschedule` has aat and preview. See `apim/README.md`.
+
+**Try It Now stops at demo.** There is no production deployment and there must not be one, so
+`apim/prod.tfvars` is not a file to create — the workflow fails deliberately if it finds one.
+
 ## Not built yet
 
 - **The admin API** — ingest, review and publish. Until it exists, scenarios come from committed
