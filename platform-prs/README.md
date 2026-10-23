@@ -24,3 +24,25 @@ branch.
 
 The Jenkins build check joins it after the first green CNP build — it does not exist until the
 job is created, which needs the GitHub topic confirmed (Phase 1.3).
+
+## set-actions-variables.sh
+
+Sets the per-environment Azure OIDC repository variables (`AZURE_CLIENT_ID_<ENV>`,
+`AZURE_SUBSCRIPTION_ID_<ENV>`, `AZURE_SUBSCRIPTION_<ENV>`) for sbox, aat and preview.
+
+Ids, not secrets — OIDC removes the long-lived credential, not the identifier; trust comes from
+Azure matching the token's subject against a federated credential. Values were taken from repos
+already deploying to each environment and cross-checked against the scopes on the matching app
+registration, rather than inferred: the **aat** registration is `DTS AMp Staging` and its
+subscription is `DTS-SPS-STG`, neither of which follows from the environment name.
+
+```sh
+./platform-prs/set-actions-variables.sh
+```
+
+Only **sbox** does anything today. The other two are inert until `apim/aat.tfvars` or
+`apim/preview.tfvars` exists, because the workflow builds its matrix from those filenames. Each
+also needs two federated subjects in `azure-github-federation-config` before it can authenticate.
+
+Demo is absent on purpose: its appId is in no repo and its subscription name is not derivable, so
+both are a PlatOps ask.
