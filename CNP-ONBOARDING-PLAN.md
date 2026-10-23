@@ -36,7 +36,15 @@ One Try It Now engine serving a sandbox for every registered API. Follows the pa
 | 2.1 | `infrastructure/` | ✅ | Component-scoped RG and vault, `amp-try-it-now-{env}` |
 | 2.2 | `create_managed_identity = false` | ✅ | `cnp-module-key-vault` names it `{product}-{env}-mi` with no component segment, so it is product-wide. try-slc creates it as amp's first component; a second repo setting this true collides on the name |
 | 2.3 | Own Postgres server | ✅ | `amp-tin-flexible-{env}`. Distinct from `amp-flexible` and try-slc's `amp-try-flexible` — two repos against one server is a state conflict |
-| 2.4 | `terraform-infra-approvals/amp-try-it-now.json` | ○ To raise | Prepared in `platform-prs/`. Needs the postgres module, `cnp-module-key-vault` and `azurerm_key_vault_secret` |
+| 2.4 | `terraform-infra-approvals/amp-try-it-now.json` | ✅ Not needed | **This row was wrong.** Checked against `global.json` on 23 Oct 2026: `azurerm_resource_group`, `azurerm_key_vault_secret`, `cnp-module-key-vault` and `terraform-module-postgresql-flexible` are all globally whitelisted, so a per-repo file would add nothing. try-slc's *merged* file contains only `tls_private_key`; the snippet in its `platform-prs/` naming the modules was an over-broad guess corrected before merge. Becomes necessary only if 2.5 lands |
+| 2.5 | Demo signing key | ⚠️ Missing | Nothing supplies `demo.signing-key-jwk` in any environment, so `DemoKeys` generates an ephemeral one and logs that this "must never be the case in a deployed environment" — tokens die on every redeploy. try-slc solves it with `tls_private_key` + a vault secret. **Its terraform cannot be copied verbatim:** it stores PKCS#8 PEM and try-slc's loader sniffs for it, while this engine's `DemoKeys` calls `RSAKey.parse` unconditionally and would refuse to start. Needed for aat and demo regardless, since those run SELF_ISSUED permanently |
+
+## Phase 2b — cnp-jenkins-config
+
+| # | Step | Status | Notes |
+|---|---|---|---|
+| 2.6 | `team-config.yml` | ✅ Already done | `amp` is registered (team "API Marketplace", namespace `amp`). Product-scoped — there is no per-component entry |
+| 2.7 | `deployment-controls.yml` | ○ To raise | Prepared in `platform-prs/cnp-jenkins-config/`, with the verified insertion point: between `am-shared-infrastructure` and `backstage-hmcts-examples`. **Nothing deploys without it** |
 
 ## Phase 3 — cnp-flux-config
 

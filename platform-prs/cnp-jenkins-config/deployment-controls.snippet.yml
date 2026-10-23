@@ -1,0 +1,18 @@
+# Insert into cnp-jenkins-config/deployment-controls.yml.
+#
+# Without this entry Jenkins builds the repo but will not deploy it. It is the one
+# cnp-jenkins-config change amp/try-it-now actually needs - see the note on the approvals file
+# below.
+#
+# Verified position (23 October 2026): the file's main block is alphabetical by repo name, and
+# "amp-" sorts after "am-" and before "backstage-". There is no amp-* entry yet; this is the first.
+#
+#   - repo: https://github.com/hmcts/am-shared-infrastructure.git     <- line 28
+#     deployment-enabled: true
+#   <-- here
+#   - repo: https://github.com/hmcts/backstage-hmcts-examples.git     <- line 30
+#
+# The file is NOT alphabetical throughout - a handful of entries are appended at the end, out of
+# order. Alphabetical is the convention, not an invariant; do not "fix" those.
+  - repo: https://github.com/hmcts/amp-try-it-now.git
+    deployment-enabled: true
