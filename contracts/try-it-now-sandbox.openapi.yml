@@ -1,0 +1,174 @@
+openapi: 3.0.3
+
+info:
+  title: Try It Now — sandbox discovery
+  description: >-
+    The part of a Try It Now sandbox that is the sandbox itself, rather than the API it
+    demonstrates.
+
+
+    One deployment of `amp-try-it-now` serves a sandbox for every registered API, each under its
+    own path prefix and its own APIM product. APIM registers one API per sandbox and points it at
+    that prefix, so from a consumer's side `/scenarios` is a sibling of the demonstrated
+    operations, not a shared endpoint — the backend prefix is not visible through the gateway.
+
+
+    `GET /scenarios` is **unauthenticated**, in both token realms and at both layers. A consumer
+    reads it to find out which realm this deployment runs before it holds anything at all, so a
+    401 there would make the sandbox impossible to start using. The exemption is enumerated —
+    `AuthorizationPolicy` in the service, an allow-list of one `UrlTemplate` in the APIM policy —
+    so an operation added later is protected by default rather than open by accident.
+
+
+    It returns no credentials, in either realm.
+  version: 1.0.0
+  contact:
+    email: no-reply@hmcts.net
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: /
+    description: This sandbox
+
+tags:
+  - name: discovery
+    description: What this sandbox serves, and how to call it
+
+paths:
+  /scenarios:
+    get:
+      summary: What this sandbox serves, and how to call it
+      description: >-
+        Lists every recorded request this sandbox answers, what each one demonstrates, and which
+        token realm the deployment runs.
+
+
+        The responses behind these entries are recorded examples. No Common Platform data is
+        reachable from here and no real case data is present — `recordedFrom` says where each
+        example came from, so a lower-environment capture is never mistaken for live data.
+
+
+        Unauthenticated by design.
+      operationId: getScenarios
+      tags: [discovery]
+      responses:
+        '200':
+          description: The sandbox catalogue for this API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxCatalogue'
+        '404':
+          description: No API is registered at this path
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxError'
+
+components:
+  # Every schema here is prefixed `Sandbox`.
+  #
+  # This document is merged with the demonstrated API's own contract before import, and a merge
+  # resolves a name collision by silently letting one side win - which would publish a schema
+  # under a name whose definition came from the other spec. The prefix makes a collision
+  # impossible by construction rather than something to re-verify each time an API is added.
+  # `ErrorResponse` is the obvious one: api-cp-refdata-courthearing-courthouses defines it, and
+  # so does nearly every other api-cp-* contract.
+  schemas:
+
+    SandboxCatalogue:
+      type: object
+      description: Everything a consumer needs to make a first successful call against this API.
+      required: [api, title, description, authentication, scenarios]
+      properties:
+        api:
+          type: string
+          description: The short code this API is registered under, for example `rcc`.
+          example: rcc
+        title:
+          type: string
+          description: The API being demonstrated.
+          example: Refdata Court Hearing Courthouses
+        description:
+          type: string
+          description: What this sandbox is, and what it is not.
+        authentication:
+          $ref: '#/components/schemas/SandboxAuthentication'
+        scenarios:
+          type: array
+          description: One entry per recorded request this sandbox will answer.
+          items:
+            $ref: '#/components/schemas/SandboxScenario'
+
+    SandboxAuthentication:
+      type: object
+      description: >-
+        Which token realm this deployment runs, and the role a token must carry. Read this before
+        anything else: it decides whether to ask Microsoft Entra for a token or this service, and
+        the two are mutually exclusive.
+      required: [mode, requiredRole]
+      properties:
+        mode:
+          type: string
+          enum: [self-issued, entra]
+          description: >-
+            `entra` — the service verifies real Microsoft Entra app-only tokens, and you need your
+            own app registration holding the required role on this API's resource app. This is what
+            a sandbox reached through APIM runs.
+
+
+            `self-issued` — the service mints and verifies its own tokens, and the demo credentials
+            in the service README work. The token is worthless against anything else: the service
+            signs it with its own key and the `iss`, `aud` and `tid` claims are its own.
+          example: entra
+        requiredRole:
+          type: string
+          description: The application role a token must carry, or calls answer 403.
+          example: app.read
+
+    SandboxScenario:
+      type: object
+      description: >-
+        One published example. The audience is per-API, checked before the role, so a token minted
+        for another API's sandbox is refused here with a 401 even though the role is the same name
+        everywhere.
+      required: [request, operation, status, summary, recordedFrom]
+      properties:
+        request:
+          type: string
+          description: >-
+            The recorded request, as method and path. The path is canonical: lower-cased, with
+            query parameters sorted, so the same call written two ways resolves to one scenario.
+          example: GET /rcc/courthouses/57323172-1083-454d-8ab7-2455a8b993e7
+        operation:
+          type: string
+          description: The `operationId` from the demonstrated API's own contract.
+          example: getCourthouseByCourtId
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status this scenario answers with.
+          example: 200
+        summary:
+          type: string
+          description: One line describing what it demonstrates.
+        recordedFrom:
+          type: string
+          description: >-
+            Where the example came from — `fixture` for a committed stub, otherwise the source
+            environment it was captured from.
+          example: fixture
+
+    SandboxError:
+      type: object
+      description: A coarse error. Never echoes a token, a claim value or an internal class name.
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          example: not_found
+        message:
+          type: string
+          example: No API is registered at this path.
