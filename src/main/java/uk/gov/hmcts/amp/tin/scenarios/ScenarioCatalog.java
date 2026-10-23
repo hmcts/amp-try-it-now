@@ -76,7 +76,9 @@ public class ScenarioCatalog {
         return Optional.ofNullable(forApi(apiId).get(cacheKey(method, requestKey)));
     }
 
-    /** Everything published for one API, for {@code GET /{shortCode}/scenarios}. */
+    /**
+     * Everything published for one API, for {@code GET /{shortCode}/scenarios}.
+     */
     public List<Scenario> all(final String apiId) {
         return List.copyOf(forApi(apiId).values());
     }

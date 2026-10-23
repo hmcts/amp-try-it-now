@@ -60,6 +60,8 @@ public class TokenValidator {
     }
 
     /**
+     * Verifies a bearer token and holds it against one API's audience and role.
+     *
      * @param api the API the request is addressed to. Its audience and role are what the token is
      *            held against - not a service-wide pair.
      */
@@ -115,7 +117,11 @@ public class TokenValidator {
         }
     }
 
-    /** @param clientId the token subject, carried into the MDC for correlation. */
+    /**
+     * A caller whose token verified against the API it addressed.
+     *
+     * @param clientId the token subject, carried into the MDC for correlation
+     */
     public record ValidatedCaller(String clientId, String apiId) {
     }
 }

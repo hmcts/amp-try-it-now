@@ -18,7 +18,11 @@ public record ApiDefinition(String shortCode,
                             String audience,
                             List<Operation> operations) {
 
-    /** @param path the template as the OpenAPI spec writes it, e.g. {@code /courthouses/{court_id}} */
+    /**
+     * One operation an API exposes, as its OpenAPI spec declares it.
+     *
+     * @param path the template as the spec writes it, e.g. {@code /courthouses/{court_id}}
+     */
     public record Operation(String id, String method, String path) {
     }
 }
