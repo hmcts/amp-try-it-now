@@ -7,19 +7,23 @@
       "path": "/case/TIN-ALLOCATED-01/courtschedule",
       "scenarioId": "allocated",
       "status": 200,
-      "summary": "A case with one allocated hearing",
+      "summary": "Allocated hearing — one sitting with a court room, judge and start/end times.",
       "body": {
         "courtSchedule": [
           {
             "hearings": [
               {
-                "hearingId": "f8c3de3d-1d8d-4f5e-9a2b-7c1e4d9b0a11",
+                "hearingId": "HRG-123410",
                 "hearingType": "Trial",
-                "listedStartDateTime": "2027-03-01T10:00:00Z",
+                "hearingDescription": "Trial of theft case",
+                "listNote": "Requires interpreter",
                 "courtSittings": [
                   {
-                    "sittingStart": "2027-03-01T10:00:00Z",
-                    "courtHouse": "Southwark Crown Court"
+                    "sittingStart": "2026-03-18T09:00:00Z",
+                    "sittingEnd": "2026-03-18T12:00:00Z",
+                    "judiciaryId": "123e4567-e89b-12d3-a456-426614174000",
+                    "courtHouse": "223e4567-e89b-12d3-a456-426614174111",
+                    "courtRoom": "b7a9cb95-4f7c-4aba-b9a2-8cb1ad3330b2"
                   }
                 ]
               }
@@ -31,11 +35,133 @@
     {
       "operationId": "getCourtScheduleByCaseUrn",
       "method": "GET",
-      "path": "/case/TIN-EMPTY-01/courtschedule",
-      "scenarioId": "empty",
+      "path": "/case/TIN-WEEKCOMM-01/courtschedule",
+      "scenarioId": "week-commencing",
       "status": 200,
-      "summary": "A known case with nothing listed - an empty array is a valid 200, not a fault",
-      "body": { "courtSchedule": [] }
+      "summary": "Unallocated hearing — empty courtSittings with a weekCommencing block. Valid, not a fault.",
+      "body": {
+        "courtSchedule": [
+          {
+            "hearings": [
+              {
+                "hearingId": "HRG-123906",
+                "hearingType": "Trial",
+                "hearingDescription": "Trial not yet allocated to a sitting",
+                "listNote": "Requires interpreter",
+                "courtSittings": [],
+                "weekCommencing": {
+                  "startDate": "2026-02-16",
+                  "endDate": "2026-02-22",
+                  "durationInWeeks": 1,
+                  "courtHouse": "223e4567-e89b-12d3-a456-426614174111"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "operationId": "getCourtScheduleByCaseUrn",
+      "method": "GET",
+      "path": "/case/TIN-MULTI-01/courtschedule",
+      "scenarioId": "multiple-hearings",
+      "status": 200,
+      "summary": "Two hearings on one case, mixing an allocated sitting and a week-commencing listing.",
+      "body": {
+        "courtSchedule": [
+          {
+            "hearings": [
+              {
+                "hearingId": "HRG-200001",
+                "hearingType": "Preliminary",
+                "hearingDescription": "First hearing",
+                "listNote": "No special requirements",
+                "courtSittings": [
+                  {
+                    "sittingStart": "2026-04-07T10:00:00Z",
+                    "sittingEnd": "2026-04-07T11:30:00Z",
+                    "judiciaryId": "123e4567-e89b-12d3-a456-426614174000",
+                    "courtHouse": "223e4567-e89b-12d3-a456-426614174111",
+                    "courtRoom": "b7a9cb95-4f7c-4aba-b9a2-8cb1ad3330b2"
+                  }
+                ]
+              },
+              {
+                "hearingId": "HRG-200002",
+                "hearingType": "Sentencing",
+                "hearingDescription": "Sentencing following conviction",
+                "listNote": "Pre-sentence report required",
+                "courtSittings": [],
+                "weekCommencing": {
+                  "startDate": "2026-05-11",
+                  "endDate": "2026-05-17",
+                  "durationInWeeks": 1,
+                  "courtHouse": "223e4567-e89b-12d3-a456-426614174111"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "operationId": "getCourtScheduleByCaseUrn",
+      "method": "GET",
+      "path": "/case/TIN-EMPTY-01/courtschedule",
+      "scenarioId": "empty-schedule",
+      "status": 200,
+      "summary": "Case exists but has no hearings listed — an empty courtSchedule array, still a 200.",
+      "body": {
+        "courtSchedule": []
+      }
+    },
+    {
+      "operationId": "getCourtScheduleByCaseUrn",
+      "method": "GET",
+      "path": "/case/TIN-NOTFOUND-01/courtschedule",
+      "scenarioId": "not-found",
+      "status": 404,
+      "summary": "Case URN has no schedule. Any unrecognised URN answers this way too.",
+      "body": {
+        "error": "not_found",
+        "message": "No court schedule exists for the supplied case URN.",
+        "details": {},
+        "timestamp": "2026-01-01T00:00:00Z",
+        "traceId": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    {
+      "operationId": "getCourtScheduleByCaseUrn",
+      "method": "GET",
+      "path": "/case/TIN-BADREQUEST-01/courtschedule",
+      "scenarioId": "bad-request",
+      "status": 400,
+      "summary": "Malformed case URN rejected by the API.",
+      "body": {
+        "error": "invalid_request",
+        "message": "The supplied case URN is not in a recognised format.",
+        "details": {
+          "parameter": "case_urn"
+        },
+        "timestamp": "2026-01-01T00:00:00Z",
+        "traceId": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    {
+      "operationId": "getCourtScheduleByCaseUrn",
+      "method": "GET",
+      "path": "/case/TIN-SERVERERROR-01/courtschedule",
+      "scenarioId": "server-error",
+      "status": 500,
+      "summary": "Backend failure, so a consumer can exercise its own 5xx retry handling.",
+      "body": {
+        "error": "internal_server_error",
+        "message": "Scenario TIN-SERVERERROR-01: simulated backend failure. A real 500 from this sandbox would not name a scenario.",
+        "details": {},
+        "timestamp": "2026-01-01T00:00:00Z",
+        "traceId": "00000000-0000-0000-0000-000000000000"
+      }
     }
   ]
 }
