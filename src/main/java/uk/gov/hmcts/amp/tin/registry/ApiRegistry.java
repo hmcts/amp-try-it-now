@@ -37,7 +37,7 @@ public class ApiRegistry {
     private final String location;
     private final boolean entraRealm;
 
-    private Map<String, ApiDefinition> byShortCode = Map.of();
+    private Map<String, ApiDefinition> apisByShortCode = Map.of();
 
     public ApiRegistry(final ResourceLoader resourceLoader,
                        final Environment environment,
@@ -50,7 +50,7 @@ public class ApiRegistry {
     }
 
     @PostConstruct
-    void load() throws IOException {
+    /* default */ void load() throws IOException {
         final Resource resource = resourceLoader.getResource(location);
         if (!resource.exists()) {
             throw new IllegalStateException("No API registry at " + location);
@@ -66,20 +66,31 @@ public class ApiRegistry {
 
         final Map<String, ApiDefinition> loaded = new LinkedHashMap<>();
         for (final RegistryEntry entry : file.apis()) {
-            final String shortCode = require(entry.shortCode(), "shortCode", entry.shortCode());
-            final String audience = resolveAudience(entry);
-            loaded.put(shortCode.toLowerCase(Locale.ROOT), new ApiDefinition(
-                    shortCode,
-                    entry.title(),
-                    entry.catalogueName(),
-                    entry.productId(),
-                    require(entry.role(), "role", shortCode),
-                    audience,
-                    entry.operations() == null ? List.of() : entry.operations()));
+            final ApiDefinition definition = toDefinition(entry);
+            loaded.put(definition.shortCode().toLowerCase(Locale.ROOT), definition);
         }
-        byShortCode = Map.copyOf(loaded);
+        apisByShortCode = Map.copyOf(loaded);
         log.info("API registry loaded: {} apis {} realm:{}",
-                byShortCode.size(), byShortCode.keySet(), entraRealm ? "ENTRA" : "SELF_ISSUED");
+                apisByShortCode.size(), apisByShortCode.keySet(), entraRealm ? "ENTRA" : "SELF_ISSUED");
+    }
+
+    /**
+     * One registry entry, validated.
+     *
+     * <p>Split out of the loop rather than inlined: constructing inside a loop is what
+     * {@code AvoidInstantiatingObjectsInLoops} objects to, and an entry that validates itself reads
+     * better than one that is half-checked at the call site anyway.
+     */
+    private ApiDefinition toDefinition(final RegistryEntry entry) {
+        final String shortCode = require(entry.shortCode(), "shortCode", entry.shortCode());
+        return new ApiDefinition(
+                shortCode,
+                entry.title(),
+                entry.catalogueName(),
+                entry.productId(),
+                require(entry.role(), "role", shortCode),
+                resolveAudience(entry),
+                entry.operations() == null ? List.of() : entry.operations());
     }
 
     /**
@@ -117,21 +128,21 @@ public class ApiRegistry {
     public Optional<ApiDefinition> byShortCode(final String shortCode) {
         return shortCode == null
                 ? Optional.empty()
-                : Optional.ofNullable(byShortCode.get(shortCode.toLowerCase(Locale.ROOT)));
+                : Optional.ofNullable(apisByShortCode.get(shortCode.toLowerCase(Locale.ROOT)));
     }
 
     public List<ApiDefinition> all() {
-        return List.copyOf(byShortCode.values());
+        return List.copyOf(apisByShortCode.values());
     }
 
     public boolean isRegistered(final String shortCode) {
         return byShortCode(shortCode).isPresent();
     }
 
-    record RegistryFile(List<RegistryEntry> apis) {
+    /* default */ record RegistryFile(List<RegistryEntry> apis) {
     }
 
-    record RegistryEntry(String shortCode, String title, String catalogueName, String productId,
+    /* default */ record RegistryEntry(String shortCode, String title, String catalogueName, String productId,
                          String role, String audienceEnv,
                          List<ApiDefinition.Operation> operations) {
     }

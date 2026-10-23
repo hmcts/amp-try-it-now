@@ -20,7 +20,7 @@ final class SelfIssuedTokens {
     private SelfIssuedTokens() {
     }
 
-    static JWTClaimsSet verify(final String bearer,
+    /* default */ static JWTClaimsSet verify(final String bearer,
                                final AuthProperties properties,
                                final DemoKeys keys) {
         final SignedJWT jwt;

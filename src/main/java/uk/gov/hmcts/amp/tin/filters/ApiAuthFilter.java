@@ -32,7 +32,7 @@ import java.util.Optional;
 @Component
 public class ApiAuthFilter extends OncePerRequestFilter {
 
-    private static final String BEARER = "Bearer ";
+    private static final String BEARER_PREFIX = "Bearer ";
     private static final String MDC_CLIENT_ID = "clientId";
     private static final String MDC_API_ID = "apiId";
 
@@ -88,8 +88,8 @@ public class ApiAuthFilter extends OncePerRequestFilter {
 
     private static String bearer(final HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
-                .filter(header -> header.startsWith(BEARER))
-                .map(header -> header.substring(BEARER.length()).trim())
+                .filter(header -> header.startsWith(BEARER_PREFIX))
+                .map(header -> header.substring(BEARER_PREFIX.length()).trim())
                 .orElse(null);
     }
 

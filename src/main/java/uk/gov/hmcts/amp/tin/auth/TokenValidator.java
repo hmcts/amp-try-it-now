@@ -94,11 +94,11 @@ public class TokenValidator {
      */
     private void requireAudience(final JWTClaimsSet claims, final ApiDefinition api) {
         final String expected = properties.audienceFor(api);
-        final List<String> actual = claims.getAudience();
         if (expected == null || expected.isBlank()) {
             throw new TokenValidationException(Reason.WRONG_AUDIENCE,
                     "no audience configured for " + api.shortCode());
         }
+        final List<String> actual = claims.getAudience();
         if (actual == null || !new HashSet<>(actual).contains(expected)) {
             throw new TokenValidationException(Reason.WRONG_AUDIENCE,
                     "token audience does not match " + api.shortCode());

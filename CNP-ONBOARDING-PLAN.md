@@ -8,7 +8,7 @@ One Try It Now engine serving a sandbox for every registered API. Follows the pa
 | What | Name |
 |---|---|
 | GitHub repo | `amp-try-it-now` |
-| GitHub topic | `jenkins-cft-a-i` — **unverified**, see Phase 1 |
+| GitHub topic | `jenkins-cft-a-c` — currently set to the non-existent `jenkins-cft-a-i`, see Phase 1.3 |
 | Jenkins product / component | `amp` / `try-it-now` |
 | Kubernetes namespace | `amp` |
 | Helm release / chart | `amp-try-it-now` |
@@ -26,8 +26,9 @@ One Try It Now engine serving a sandbox for every registered API. Follows the pa
 |---|---|---|
 | 1.1 | Service, chart, Jenkinsfiles, tests | ✅ |
 | 1.2 | `hmcts/amp-try-it-now` created and pushed | ✅ public, default `master` |
-| 1.3 | GitHub topic | ⚠️ set to `jenkins-cft-a-i` by the alphabetical rule. Every other AMP repo is `jenkins-cft-j-z` because their names start j–z; this one starts with `a`. **Confirm with PlatOps** — the topic decides the Jenkins folder, and a wrong one means the job is never created |
-| 1.4 | Branch protection | ○ To do — add the Jenkins check after the first green build |
+| 1.3 | GitHub topic | ⚠️ **WRONG — fix before anything else** | Currently `jenkins-cft-a-i`, which **does not exist**. `cnp-jenkins-config/jobdsl/organisations-beta.groovy` declares exactly three: `jenkins-cft-a-c`, `jenkins-cft-d-i`, `jenkins-cft-j-z`. Should be **`jenkins-cft-a-c`**. Until then the repo is in no Jenkins org folder and no job is created. `gh api -X PUT /repos/hmcts/amp-try-it-now/topics -f 'names[]=jenkins-cft-a-c'` |
+| 1.4 | Static analysis | ✅ | try-slc's `.github/pmd-ruleset.xml`, CodeQL config and both workflows, copied unchanged. They produce the three check names the branch ruleset requires. The ruleset found 16 violations here and none in try-slc, so the code was brought up to it — no excludes, no `@SuppressWarnings` |
+| 1.5 | Branch ruleset | ✅ Applied | Ruleset `25736208`, byte-identical to try-slc's `24376232`: block deletion and force-push, PR required with conversation resolution and no approvals, and the three checks `Analyze (java)`, `CodeQL`, `pmd-analysis`. Applied only after all three went green on PR #2. Payload kept in `platform-prs/branch-ruleset.json`. The Jenkins build check joins it after the first green CNP build |
 
 ## Phase 2 — Terraform
 
@@ -36,7 +37,15 @@ One Try It Now engine serving a sandbox for every registered API. Follows the pa
 | 2.1 | `infrastructure/` | ✅ | Component-scoped RG and vault, `amp-try-it-now-{env}` |
 | 2.2 | `create_managed_identity = false` | ✅ | `cnp-module-key-vault` names it `{product}-{env}-mi` with no component segment, so it is product-wide. try-slc creates it as amp's first component; a second repo setting this true collides on the name |
 | 2.3 | Own Postgres server | ✅ | `amp-tin-flexible-{env}`. Distinct from `amp-flexible` and try-slc's `amp-try-flexible` — two repos against one server is a state conflict |
-| 2.4 | `terraform-infra-approvals/amp-try-it-now.json` | ○ To raise | Prepared in `platform-prs/`. Needs the postgres module, `cnp-module-key-vault` and `azurerm_key_vault_secret` |
+| 2.4 | `terraform-infra-approvals/amp-try-it-now.json` | ✅ Not needed | **This row was wrong.** Checked against `global.json` on 23 Oct 2026: `azurerm_resource_group`, `azurerm_key_vault_secret`, `cnp-module-key-vault` and `terraform-module-postgresql-flexible` are all globally whitelisted, so a per-repo file would add nothing. try-slc's *merged* file contains only `tls_private_key`; the snippet in its `platform-prs/` naming the modules was an over-broad guess corrected before merge. Becomes necessary only if 2.5 lands |
+| 2.5 | Demo signing key | ⚠️ Missing | Nothing supplies `demo.signing-key-jwk` in any environment, so `DemoKeys` generates an ephemeral one and logs that this "must never be the case in a deployed environment" — tokens die on every redeploy. try-slc solves it with `tls_private_key` + a vault secret. **Its terraform cannot be copied verbatim:** it stores PKCS#8 PEM and try-slc's loader sniffs for it, while this engine's `DemoKeys` calls `RSAKey.parse` unconditionally and would refuse to start. Needed for aat and demo regardless, since those run SELF_ISSUED permanently |
+
+## Phase 2b — cnp-jenkins-config
+
+| # | Step | Status | Notes |
+|---|---|---|---|
+| 2.6 | `team-config.yml` | ✅ Already done | `amp` is registered (team "API Marketplace", namespace `amp`). Product-scoped — there is no per-component entry |
+| 2.7 | `deployment-controls.yml` | ○ To raise | Prepared in `platform-prs/cnp-jenkins-config/`, with the verified insertion point: between `am-shared-infrastructure` and `backstage-hmcts-examples`. **Nothing deploys without it** |
 
 ## Phase 3 — cnp-flux-config
 
