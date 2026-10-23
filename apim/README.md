@@ -84,4 +84,16 @@ before the terraform is evaluated:
    | `AZURE_SUBSCRIPTION_ID_SBOX` | `bd2864ed-4f3e-45ed-9c6a-8d179674bab1` |
    | `AZURE_SUBSCRIPTION_SBOX` | `DTS-SPS-SBOX` |
 
+   None of the three is a secret — they are ids, not credentials, and they are the same values
+   try-slc carries:
+
+   ```sh
+   gh variable set AZURE_CLIENT_ID_SBOX       --repo hmcts/amp-try-it-now --body 72a7651d-9d2a-4c04-9085-957efeab0e53
+   gh variable set AZURE_SUBSCRIPTION_ID_SBOX --repo hmcts/amp-try-it-now --body bd2864ed-4f3e-45ed-9c6a-8d179674bab1
+   gh variable set AZURE_SUBSCRIPTION_SBOX    --repo hmcts/amp-try-it-now --body DTS-SPS-SBOX
+   ```
+
    `TFSTATE_STORAGE_ACCOUNT_NONPROD` is an organisation variable and is inherited.
+
+Setting the variables is the easy half and can be done now. The federated credential is the real
+ask: it lives on the deploy app, not in any repository, so it needs PlatOps.

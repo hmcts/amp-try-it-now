@@ -10,7 +10,14 @@ info:
     One deployment of `amp-try-it-now` serves a sandbox for every registered API, each under its
     own path prefix and its own APIM product. APIM registers one API per sandbox and points it at
     that prefix, so from a consumer's side `/scenarios` is a sibling of the demonstrated
-    operations, not a shared endpoint — the backend prefix is not visible through the gateway.
+    operations rather than a shared endpoint, and the operation paths are the demonstrated API's
+    own.
+
+
+    **`request` in each scenario is backend-relative and still carries that prefix** — it reads
+    `GET /rcc/courthouses/...` where a consumer coming through the gateway calls
+    `.../amp/try/rcc/courthouses/...`. Take the operation paths from the published spec, not from
+    this field.
 
 
     `GET /scenarios` is **unauthenticated**, in both token realms and at both layers. A consumer
@@ -139,8 +146,10 @@ components:
         request:
           type: string
           description: >-
-            The recorded request, as method and path. The path is canonical: lower-cased, with
-            query parameters sorted, so the same call written two ways resolves to one scenario.
+            The recorded request, as method and path, **in the engine's own backend form** — it
+            carries the API's short-code prefix, which the gateway route does not. Canonical:
+            lower-cased, with query parameters sorted, so the same call written two ways resolves
+            to one scenario.
           example: GET /rcc/courthouses/57323172-1083-454d-8ab7-2455a8b993e7
         operation:
           type: string

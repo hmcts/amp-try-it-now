@@ -44,7 +44,7 @@ locals {
 
   # Declared only in the copy imported into APIM, so the portal's Try it shows them as pre-filled
   # boxes. The specs themselves are untouched - the demonstrated one is a vendored copy of a
-  # published tag and must stay byte-identical to it.
+  # published tag and must stay identical to it below the provenance header.
   try_it_headers = [
     {
       name        = "Authorization"
@@ -120,16 +120,16 @@ module "apis" {
     each.key
   )
 
+  # Derived from the short code, NOT from a spec title.
+  #
+  # try-slc derived it from info.title, which worked because its one spec had one title. Here
+  # api_specs is the sandbox contract - the same file for every API - so a title-derived name
+  # would be "try-it-now---sandbox-discovery" for all of them, and the second API registered in
+  # this APIM instance would collide with the first. The short code is the one thing guaranteed
+  # unique across the registry.
   name = coalesce(
     try(each.value.name, null),
-    lower(replace(
-      coalesce(
-        try(local.api_specs[each.key].info.title, null),
-        each.key
-      ),
-      "/[^0-9A-Za-z-]/",
-      "-"
-    ))
+    "try-it-now-${each.key}"
   )
 
   path = coalesce(
