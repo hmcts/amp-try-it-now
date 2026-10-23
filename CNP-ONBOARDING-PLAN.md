@@ -8,7 +8,7 @@ One Try It Now engine serving a sandbox for every registered API. Follows the pa
 | What | Name |
 |---|---|
 | GitHub repo | `amp-try-it-now` |
-| GitHub topic | `jenkins-cft-a-i` — **unverified**, see Phase 1 |
+| GitHub topic | `jenkins-cft-a-c` — currently set to the non-existent `jenkins-cft-a-i`, see Phase 1.3 |
 | Jenkins product / component | `amp` / `try-it-now` |
 | Kubernetes namespace | `amp` |
 | Helm release / chart | `amp-try-it-now` |
@@ -26,7 +26,7 @@ One Try It Now engine serving a sandbox for every registered API. Follows the pa
 |---|---|---|
 | 1.1 | Service, chart, Jenkinsfiles, tests | ✅ |
 | 1.2 | `hmcts/amp-try-it-now` created and pushed | ✅ public, default `master` |
-| 1.3 | GitHub topic | ⚠️ set to `jenkins-cft-a-i` by the alphabetical rule. Every other AMP repo is `jenkins-cft-j-z` because their names start j–z; this one starts with `a`. **Confirm with PlatOps** — the topic decides the Jenkins folder, and a wrong one means the job is never created |
+| 1.3 | GitHub topic | ⚠️ **WRONG — fix before anything else** | Currently `jenkins-cft-a-i`, which **does not exist**. `cnp-jenkins-config/jobdsl/organisations-beta.groovy` declares exactly three: `jenkins-cft-a-c`, `jenkins-cft-d-i`, `jenkins-cft-j-z`. Should be **`jenkins-cft-a-c`**. Until then the repo is in no Jenkins org folder and no job is created. `gh api -X PUT /repos/hmcts/amp-try-it-now/topics -f 'names[]=jenkins-cft-a-c'` |
 | 1.4 | Static analysis | ✅ | try-slc's `.github/pmd-ruleset.xml`, CodeQL config and both workflows, copied unchanged. They produce the three check names the branch ruleset requires. The ruleset found 16 violations here and none in try-slc, so the code was brought up to it — no excludes, no `@SuppressWarnings` |
 | 1.5 | Branch ruleset | ✅ Applied | Ruleset `25736208`, byte-identical to try-slc's `24376232`: block deletion and force-push, PR required with conversation resolution and no approvals, and the three checks `Analyze (java)`, `CodeQL`, `pmd-analysis`. Applied only after all three went green on PR #2. Payload kept in `platform-prs/branch-ruleset.json`. The Jenkins build check joins it after the first green CNP build |
 

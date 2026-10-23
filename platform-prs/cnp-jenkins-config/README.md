@@ -2,8 +2,35 @@
 
 ## What this component needs: one file, not two
 
-**`deployment-controls.yml`** — an entry enabling deployment. Prepared in
-`deployment-controls.snippet.yml`, with its verified insertion point. Nothing deploys without it.
+**`deployment-controls.yml`** — an entry. Prepared in `deployment-controls.snippet.yml`, with
+its verified insertion point.
+
+This is stronger than "nothing deploys without it": **the Jenkins job is never created without
+it.** `jobdsl/organisations-beta.groovy` reads the file at CasC startup
+(`loadApprovedRepos`), collects every `repositories[].repo` name — regardless of
+`deployment-enabled` — and builds a `RegexSCMSourceFilterTrait` from them. The GitHub org scan
+only picks up repos matching that allowlist. Its own comment: *"Only repositories present in this
+allowlist will be picked up by Jenkins."* `deployment-enabled: true` is a separate flag consumed
+later, to permit the deploy once the job exists.
+
+**The GitHub topic is wrong, and it is in this area.** `amp-try-it-now` carries
+`jenkins-cft-a-i`. **That topic does not exist.** `jobdsl/organisations-beta.groovy` declares
+exactly three orgs:
+
+| Topic | Jenkins folder |
+|---|---|
+| `jenkins-cft-a-c` | HMCTS - A to C |
+| `jenkins-cft-d-i` | HMCTS - D to I |
+| `jenkins-cft-j-z` | HMCTS - J to Z |
+
+So the repo is in no org folder at all and the job would never be created even with the
+deployment-controls entry. It should be **`jenkins-cft-a-c`**. try-slc and
+`service-api-marketplace` both carry `jenkins-cft-j-z`, consistent with alphabetical on repo name
+("t", "s"). Set it with:
+
+```sh
+gh api -X PUT /repos/hmcts/amp-try-it-now/topics -f 'names[]=jenkins-cft-a-c'
+```
 
 **`team-config.yml`** — nothing to do. `amp` is already registered (team "API Marketplace",
 namespace `amp`, build notices to `#api-marketplace-build-notices`). It is product-scoped; there
