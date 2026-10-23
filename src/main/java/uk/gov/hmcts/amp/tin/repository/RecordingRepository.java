@@ -5,6 +5,7 @@ import uk.gov.hmcts.amp.tin.entity.RecordingEntity;
 import uk.gov.hmcts.amp.tin.entity.RecordingStatus;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface RecordingRepository extends JpaRepository<RecordingEntity, UUID> {
@@ -16,4 +17,8 @@ public interface RecordingRepository extends JpaRepository<RecordingEntity, UUID
     List<RecordingEntity> findByApiIdAndStatus(String apiId, RecordingStatus status);
 
     List<RecordingEntity> findByStatus(RecordingStatus status);
+
+    /** The one PUBLISHED row for a request, if there is one. The partial index permits only one. */
+    Optional<RecordingEntity> findFirstByApiIdAndMethodAndRequestKeyAndStatus(
+            String apiId, String method, String requestKey, RecordingStatus status);
 }

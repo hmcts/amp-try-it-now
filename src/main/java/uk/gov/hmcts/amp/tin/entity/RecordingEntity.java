@@ -51,6 +51,9 @@ public class RecordingEntity {
 
     private String summary;
 
+    @Column(name = "fixture_hash")
+    private String fixtureHash;
+
     @Column(name = "recorded_from")
     private String recordedFrom;
 

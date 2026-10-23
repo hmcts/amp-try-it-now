@@ -93,6 +93,19 @@ curl -H "Authorization: Bearer $TOKEN" localhost:8080/rcc/courthouses/TIN-ALLOCA
 curl -s -X POST 'localhost:8080/oauth2/v2.0/token?api=slc&entitled=false'
 ```
 
+## Changing a scenario
+
+Edit its fixture and redeploy. Seeding compares a **content hash** of each fixture against the live
+row, so an unchanged deployment writes nothing and an edited fixture supersedes the row it replaces.
+The old row is archived rather than deleted, so what was served before is still there to look at.
+
+The hash covers everything a consumer can observe — body, status, summary, operation and the request
+key. A summary edit alone is still a change, because it shows on `/scenarios`.
+
+**A fixture never overwrites a recording that did not come from one.** Provenance is `recorded_from`,
+not the hash: a row ingested through the admin API is left exactly where it is, so a redeploy cannot
+undo what a team published.
+
 ## Adding an API
 
 1. An entry in `registry/apis.yaml` — short code, role, and the environment variable holding its
@@ -106,7 +119,7 @@ accept a token minted for any resource, so the pod stops rather than quietly wid
 ## Not built yet
 
 - **The admin API** — ingest, review and publish. Until it exists, scenarios come from committed
-  fixtures only. It must not ship with a configurable issuer and no self-issued guard: a locally
+  fixtures only, which means a redeploy rather than a call. It must not ship with a configurable issuer and no self-issued guard: a locally
   mintable admin token must be impossible to present in sandbox.
 - **Ingest-time contract validation** against each API's published OpenAPI schema. This is what
   replaces parsing into a generated model, and is what lets the engine serve bodies verbatim while
