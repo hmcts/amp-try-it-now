@@ -29,9 +29,9 @@ apis:
     role: app.read
     audienceEnv: AUTH_AUDIENCE_RCC
     operations:
-      - id: getCourthouseById
+      - id: getCourthouseByCourtId
         method: GET
         path: /courthouses/{court_id}
-      - id: getCourtroomById
+      - id: getCourthouseByCourtIdAndCourtRoomId
         method: GET
         path: /courthouses/{court_id}/courtrooms/{court_room_id}

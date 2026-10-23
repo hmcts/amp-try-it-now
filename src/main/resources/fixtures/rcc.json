@@ -2,29 +2,88 @@
   "apiId": "rcc",
   "scenarios": [
     {
-      "operationId": "getCourthouseById",
+      "operationId": "getCourthouseByCourtId",
       "method": "GET",
-      "path": "/courthouses/TIN-ALLOCATED-01",
+      "path": "/courthouses/57323172-1083-454d-8ab7-2455a8b993e7",
       "scenarioId": "courthouse",
       "status": 200,
-      "summary": "One courthouse. Deliberately keyed on the same text slc uses, to prove the two do not collide",
+      "summary": "A crown court house with its address. No courtRoom array - that is the courtroom operation.",
       "body": {
-        "courtHouseId": "TIN-ALLOCATED-01",
-        "courtHouseName": "Southwark Crown Court",
-        "courtHouseCode": "C01SE"
+        "courtHouseType": "crown",
+        "courtHouseCode": "LND001",
+        "courtHouseName": "Central London County Court",
+        "address": {
+          "address1": "Thomas More Building",
+          "address2": "Royal Courts of Justice",
+          "address3": "Strand",
+          "address4": "London",
+          "postalCode": "WC2A 2LL",
+          "country": "UK"
+        }
       }
     },
     {
-      "operationId": "getCourtroomById",
+      "operationId": "getCourthouseByCourtIdAndCourtRoomId",
       "method": "GET",
-      "path": "/courthouses/TIN-ALLOCATED-01/courtrooms/TIN-ROOM-02",
-      "scenarioId": "courtroom",
+      "path": "/courthouses/57323172-1083-454d-8ab7-2455a8b993e7/courtrooms/aa12f3dd-4cc1-4da7-b9ea-552fa3b9bc44",
+      "scenarioId": "courthouse-with-courtroom",
       "status": 200,
-      "summary": "A courtroom within a courthouse - the nested operation, two path parameters",
+      "summary": "The same court house, narrowed to one courtroom. Note courtRoomId is an integer, not the uuid in the path.",
       "body": {
-        "courtRoomId": "TIN-ROOM-02",
-        "courtRoomName": "Court 2",
-        "courtHouseId": "TIN-ALLOCATED-01"
+        "courtHouseType": "crown",
+        "courtHouseCode": "LND001",
+        "courtHouseName": "Central London County Court",
+        "address": {
+          "address1": "Thomas More Building",
+          "address2": "Royal Courts of Justice",
+          "address3": "Strand",
+          "address4": "London",
+          "postalCode": "WC2A 2LL",
+          "country": "UK"
+        },
+        "courtRoom": [
+          { "courtRoomId": 101, "courtRoomName": "Courtroom A" }
+        ]
+      }
+    },
+    {
+      "operationId": "getCourthouseByCourtId",
+      "method": "GET",
+      "path": "/courthouses/9f1b7c22-5e40-4c8a-bb3e-6d2f0a4e1c58",
+      "scenarioId": "magistrate-courthouse",
+      "status": 200,
+      "summary": "A magistrate court house with several courtrooms - the other value of the courtHouseType enum.",
+      "body": {
+        "courtHouseType": "magistrate",
+        "courtHouseCode": "LND014",
+        "courtHouseName": "Westminster Magistrates Court",
+        "address": {
+          "address1": "181 Marylebone Road",
+          "address2": "",
+          "address3": "",
+          "address4": "London",
+          "postalCode": "NW1 5BR",
+          "country": "UK"
+        },
+        "courtRoom": [
+          { "courtRoomId": 1, "courtRoomName": "Courtroom 1" },
+          { "courtRoomId": 2, "courtRoomName": "Courtroom 2" },
+          { "courtRoomId": 3, "courtRoomName": "Courtroom 3" }
+        ]
+      }
+    },
+    {
+      "operationId": "getCourthouseByCourtId",
+      "method": "GET",
+      "path": "/courthouses/not-a-uuid",
+      "scenarioId": "bad-request",
+      "status": 400,
+      "summary": "court_id is declared as a uuid, so anything else is rejected before any lookup happens.",
+      "body": {
+        "error": "invalid_request",
+        "message": "court_id must be a uuid.",
+        "timestamp": "2026-04-07T10:00:00Z",
+        "traceId": "2f8c1d44-9b3e-4a07-8d51-6c0f2e7b9a13"
       }
     }
   ]
