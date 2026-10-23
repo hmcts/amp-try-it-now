@@ -28,7 +28,7 @@ One Try It Now engine serving a sandbox for every registered API. Follows the pa
 | 1.2 | `hmcts/amp-try-it-now` created and pushed | ✅ public, default `master` |
 | 1.3 | GitHub topic | ⚠️ set to `jenkins-cft-a-i` by the alphabetical rule. Every other AMP repo is `jenkins-cft-j-z` because their names start j–z; this one starts with `a`. **Confirm with PlatOps** — the topic decides the Jenkins folder, and a wrong one means the job is never created |
 | 1.4 | Static analysis | ✅ | try-slc's `.github/pmd-ruleset.xml`, CodeQL config and both workflows, copied unchanged. They produce the three check names the branch ruleset requires. The ruleset found 16 violations here and none in try-slc, so the code was brought up to it — no excludes, no `@SuppressWarnings` |
-| 1.5 | Branch ruleset | ○ To apply | Payload in `platform-prs/branch-ruleset.json`, copied from try-slc's ruleset `24376232`. **Apply only once the three checks are green on a PR** — requiring a check that has never run leaves `master` unmergeable. Add the Jenkins check to it after the first green build |
+| 1.5 | Branch ruleset | ✅ Applied | Ruleset `25736208`, byte-identical to try-slc's `24376232`: block deletion and force-push, PR required with conversation resolution and no approvals, and the three checks `Analyze (java)`, `CodeQL`, `pmd-analysis`. Applied only after all three went green on PR #2. Payload kept in `platform-prs/branch-ruleset.json`. The Jenkins build check joins it after the first green CNP build |
 
 ## Phase 2 — Terraform
 
