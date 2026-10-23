@@ -1,0 +1,41 @@
+{
+  "apiId": "slc",
+  "scenarios": [
+    {
+      "operationId": "getCourtScheduleByCaseUrn",
+      "method": "GET",
+      "path": "/case/TIN-ALLOCATED-01/courtschedule",
+      "scenarioId": "allocated",
+      "status": 200,
+      "summary": "A case with one allocated hearing",
+      "body": {
+        "courtSchedule": [
+          {
+            "hearings": [
+              {
+                "hearingId": "f8c3de3d-1d8d-4f5e-9a2b-7c1e4d9b0a11",
+                "hearingType": "Trial",
+                "listedStartDateTime": "2027-03-01T10:00:00Z",
+                "courtSittings": [
+                  {
+                    "sittingStart": "2027-03-01T10:00:00Z",
+                    "courtHouse": "Southwark Crown Court"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "operationId": "getCourtScheduleByCaseUrn",
+      "method": "GET",
+      "path": "/case/TIN-EMPTY-01/courtschedule",
+      "scenarioId": "empty",
+      "status": 200,
+      "summary": "A known case with nothing listed - an empty array is a valid 200, not a fault",
+      "body": { "courtSchedule": [] }
+    }
+  ]
+}

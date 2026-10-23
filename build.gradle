@@ -1,0 +1,106 @@
+plugins {
+  id 'application'
+  id 'jacoco'
+  id 'io.spring.dependency-management' version '1.1.7'
+  id 'org.springframework.boot' version '4.1.1'
+  // https://github.com/hmcts/gradle-java-plugin
+  id 'uk.gov.hmcts.java' version '0.12.70'
+}
+
+group = 'uk.gov.hmcts.amp.tin'
+version = '0.0.1'
+
+application {
+  mainClass = 'uk.gov.hmcts.amp.tin.Application'
+}
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(25)
+  }
+}
+
+def configureSourceSet(String name) {
+  sourceSets.create(name) { sourceSet ->
+    sourceSet.java {
+      compileClasspath += sourceSets.main.output + sourceSets.test.output
+      runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+      srcDir "src/${name}/java"
+    }
+    sourceSet.resources.srcDir "src/${name}/resources"
+  }
+}
+
+['smokeTest', 'integrationTest', 'functionalTest'].each { configureSourceSet(it) }
+
+configurations {
+  functionalTestImplementation.extendsFrom testImplementation
+  functionalTestRuntimeOnly.extendsFrom runtimeOnly
+  integrationTestImplementation.extendsFrom testImplementation
+  integrationTestRuntimeOnly.extendsFrom runtimeOnly
+  smokeTestImplementation.extendsFrom testImplementation
+  smokeTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
+dependencies {
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
+  implementation 'org.springframework.boot:spring-boot-starter-validation'
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+  implementation 'org.springframework.boot:spring-boot-starter-flyway'
+  implementation 'org.flywaydb:flyway-core'
+  implementation 'org.flywaydb:flyway-database-postgresql'
+  implementation 'org.postgresql:postgresql'
+
+  implementation 'com.fasterxml.jackson.core:jackson-databind'
+  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+  implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
+
+  // Token validation. The same library verifies both realms - only the key source differs.
+  implementation 'com.nimbusds:nimbus-jose-jwt:10.10'
+
+  implementation 'io.micrometer:micrometer-registry-prometheus'
+  implementation 'org.owasp.encoder:encoder:1.6.0'
+  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
+
+  compileOnly 'org.projectlombok:lombok:1.18.46'
+  annotationProcessor 'org.projectlombok:lombok:1.18.46'
+
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
+  testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+  testImplementation 'org.testcontainers:postgresql:1.21.4'
+  testImplementation 'org.testcontainers:junit-jupiter:1.21.4'
+}
+
+tasks.named('bootJar') {
+  archiveFileName = 'amp-try-it-now.jar'
+}
+
+tasks.named('test') {
+  useJUnitPlatform()
+  finalizedBy jacocoTestReport
+}
+
+tasks.register('integration', Test) {
+  description = 'Runs the integration tests.'
+  group = 'Verification'
+  testClassesDirs = sourceSets.integrationTest.output.classesDirs
+  classpath = sourceSets.integrationTest.runtimeClasspath
+  useJUnitPlatform()
+}
+
+tasks.register('functional', Test) {
+  description = 'Runs the functional tests.'
+  group = 'Verification'
+  testClassesDirs = sourceSets.functionalTest.output.classesDirs
+  classpath = sourceSets.functionalTest.runtimeClasspath
+  useJUnitPlatform()
+}
+
+tasks.register('smoke', Test) {
+  description = 'Runs the smoke tests.'
+  group = 'Verification'
+  testClassesDirs = sourceSets.smokeTest.output.classesDirs
+  classpath = sourceSets.smokeTest.runtimeClasspath
+  useJUnitPlatform()
+}

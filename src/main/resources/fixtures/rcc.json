@@ -1,0 +1,31 @@
+{
+  "apiId": "rcc",
+  "scenarios": [
+    {
+      "operationId": "getCourthouseById",
+      "method": "GET",
+      "path": "/courthouses/TIN-ALLOCATED-01",
+      "scenarioId": "courthouse",
+      "status": 200,
+      "summary": "One courthouse. Deliberately keyed on the same text slc uses, to prove the two do not collide",
+      "body": {
+        "courtHouseId": "TIN-ALLOCATED-01",
+        "courtHouseName": "Southwark Crown Court",
+        "courtHouseCode": "C01SE"
+      }
+    },
+    {
+      "operationId": "getCourtroomById",
+      "method": "GET",
+      "path": "/courthouses/TIN-ALLOCATED-01/courtrooms/TIN-ROOM-02",
+      "scenarioId": "courtroom",
+      "status": 200,
+      "summary": "A courtroom within a courthouse - the nested operation, two path parameters",
+      "body": {
+        "courtRoomId": "TIN-ROOM-02",
+        "courtRoomName": "Court 2",
+        "courtHouseId": "TIN-ALLOCATED-01"
+      }
+    }
+  ]
+}

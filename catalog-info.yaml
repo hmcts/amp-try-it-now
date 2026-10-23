@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: amp-try-it-now
+  description: Try It Now - one sandbox engine serving every AMP API
+  annotations:
+    github.com/project-slug: hmcts/amp-try-it-now
+spec:
+  type: service
+  lifecycle: experimental
+  owner: dts-api-marketplace

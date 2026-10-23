@@ -1,0 +1,59 @@
+server:
+  port: 8080
+  shutdown: graceful
+  forward-headers-strategy: native
+
+management:
+  endpoint:
+    health:
+      show-details: always
+      group:
+        readiness:
+          include: db
+  endpoints:
+    web:
+      # Base path is / because chart-java probes /health, not /actuator/health. The authorisation
+      # policy therefore has to list /info and /prometheus explicitly - see AuthorizationPolicy.
+      base-path: /
+      exposure:
+        include: health, info, prometheus
+
+spring:
+  application:
+    name: amp-try-it-now
+  config:
+    import: "optional:configtree:/mnt/secrets/amp/,optional:configtree:/mnt/secrets/amp-sbox/"
+  jpa:
+    open-in-view: false
+  datasource:
+    # stringtype=unspecified lets Postgres infer the type of a bound string from its target
+    # column, which is what allows a recorded body to reach a `json` column as the exact text that
+    # was approved. The alternative - mapping the field as a Hibernate JSON type - reparses and
+    # reserialises the document, which is the one thing V1.001 exists to prevent.
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:55432}/${POSTGRES_DATABASE:tryitnow}?stringtype=unspecified
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASS:postgres}
+    hikari:
+      maximumPoolSize: 2
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+registry:
+  location: ${REGISTRY_LOCATION:classpath:registry/apis.yaml}
+
+auth:
+  # SELF_ISSUED everywhere but sandbox. The validating code is the same in both realms; only the
+  # key source differs. There is no mode that disables validation.
+  key-source: ${AUTH_KEY_SOURCE:SELF_ISSUED}
+  tenant-id: ${AUTH_TENANT_ID:}
+  issuer: ${AUTH_ISSUER:}
+  jwks-uri: ${AUTH_JWKS_URI:}
+  # Self-issued realm only. Under ENTRA the audience is per API, from the registry.
+  audience: ${AUTH_AUDIENCE:amp-try-it-now-demo}
+  clock-skew-seconds: ${AUTH_CLOCK_SKEW_SECONDS:60}
+
+azure:
+  application-insights:
+    instrumentation-key: ${rpe.AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}

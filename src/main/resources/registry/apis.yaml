@@ -1,0 +1,37 @@
+# The registry. One entry per API this engine serves a sandbox for.
+#
+# This file is the single declaration of an API. Everything per-API that the engine needs is
+# resolved from here at startup: the path prefix it answers on, the audience its tokens must
+# carry, and the role a caller must hold. Nothing in src/main/java names an individual API.
+#
+# Adding an API is an entry here plus its scenarios. It is not a code change.
+#
+# audienceEnv names the environment variable holding that API's Entra resource app id. It is a
+# variable rather than a literal because the id does not exist until external-entra-id has
+# created the registration, and because it differs per environment. In the SELF_ISSUED realm the
+# value is unused - the engine signs and verifies its own tokens and the audience is its own.
+apis:
+  - shortCode: slc
+    title: Scheduling and Listing Court Schedule
+    catalogueName: api-cp-crime-schedulingandlisting-courtschedule
+    productId: cp-crime-schedulingandlisting
+    role: app.read
+    audienceEnv: AUTH_AUDIENCE_SLC
+    operations:
+      - id: getCourtScheduleByCaseUrn
+        method: GET
+        path: /case/{caseUrn}/courtschedule
+
+  - shortCode: rcc
+    title: Refdata Court Hearing Courthouses
+    catalogueName: api-cp-refdata-courthearing-courthouses
+    productId: cp-refdata-courthearing
+    role: app.read
+    audienceEnv: AUTH_AUDIENCE_RCC
+    operations:
+      - id: getCourthouseById
+        method: GET
+        path: /courthouses/{court_id}
+      - id: getCourtroomById
+        method: GET
+        path: /courthouses/{court_id}/courtrooms/{court_room_id}

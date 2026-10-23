@@ -1,0 +1,39 @@
+.gradle
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+*.class
+bin/main/application.yaml
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+### IntelliJ IDEA ###
+.idea
+/out
+*.iws
+*.iml
+*.ipr
+
+.DS_Store
+
+applicationinsights-agent-*.jar
+*.log
+
+### Terraform ###
+**/.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+### Local environment ###
+# .env holds whatever you actually run with and must never be committed; .envrc is the one-line
+# direnv stanza that loads it. The committed template is .env.example.
+.env
+.env.*
+!.env.example
+.envrc
