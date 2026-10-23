@@ -8,6 +8,13 @@ public class TokenValidationException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Declared on the enclosing class, not inside {@link Reason}: an enum constant's arguments
+     * cannot reference a static field of their own enum. It is a compile-time constant, so it is
+     * inlined and the nested enum sees no initialisation order at all.
+     */
+    private static final String INVALID_TOKEN = "invalid_token";
+
     private final Reason reason;
 
     public TokenValidationException(final Reason reason, final String detail) {
@@ -17,11 +24,11 @@ public class TokenValidationException extends RuntimeException {
 
     public enum Reason {
         MISSING_TOKEN("invalid_request", "No bearer token was presented.", true),
-        MALFORMED_TOKEN("invalid_token", "The token could not be read.", true),
-        UNTRUSTED_SIGNATURE("invalid_token", "The token signature did not verify.", true),
-        WRONG_AUDIENCE("invalid_token", "The token was minted for another resource.", true),
-        WRONG_ISSUER("invalid_token", "The token was not issued by the expected tenant.", true),
-        EXPIRED("invalid_token", "The token has expired.", true),
+        MALFORMED_TOKEN(INVALID_TOKEN, "The token could not be read.", true),
+        UNTRUSTED_SIGNATURE(INVALID_TOKEN, "The token signature did not verify.", true),
+        WRONG_AUDIENCE(INVALID_TOKEN, "The token was minted for another resource.", true),
+        WRONG_ISSUER(INVALID_TOKEN, "The token was not issued by the expected tenant.", true),
+        EXPIRED(INVALID_TOKEN, "The token has expired.", true),
         UNKNOWN_API("not_found", "No API is registered at this path.", true),
         /** Authenticated and unentitled - a 403, not a 401. */
         MISSING_ROLE("insufficient_scope", "The token carries no role for this API.", false);

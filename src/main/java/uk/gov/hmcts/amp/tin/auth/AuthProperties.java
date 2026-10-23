@@ -47,7 +47,7 @@ public class AuthProperties {
     }
 
     @PostConstruct
-    void check() {
+    /* default */ void check() {
         if (isEntraRealm()) {
             require(tenantId, "auth.tenant-id");
             require(issuer, "auth.issuer");

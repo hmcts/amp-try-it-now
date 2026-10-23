@@ -43,8 +43,14 @@ import java.util.UUID;
 @Configuration
 public class FixtureSeeder {
 
+    /**
+     * The provenance marker on a seeded row. A fixture may only ever supersede another fixture,
+     * so this exact value is both what seeding writes and what it checks before overwriting.
+     */
+    private static final String FIXTURE = "fixture";
+
     @Bean
-    ApplicationRunner seedFixtures(final FixtureSeedingService seeding,
+    /* default */ ApplicationRunner seedFixtures(final FixtureSeedingService seeding,
                                    final ScenarioCatalog catalogue) {
         return args -> {
             seeding.seedAll();
@@ -99,7 +105,7 @@ public class FixtureSeeder {
 
         private void seedScenario(final String apiId, final JsonNode node) throws Exception {
             final String method = node.path("method").asText("GET");
-            final String key = RequestKey.of(apiId, node.path("path").asText(), null);
+            final String key = RequestKey.from(apiId, node.path("path").asText(), null);
             final String body = mapper.writeValueAsString(node.path("body"));
             final int status = node.path("status").asInt(200);
             final String summary = node.path("summary").asText(null);
@@ -120,7 +126,7 @@ public class FixtureSeeder {
                 // where a row came from; the hash says whether its source has moved since. A row
                 // that did not come from a fixture is never superseded by one, whatever its hash -
                 // a redeploy must not undo what a team published.
-                if (!"fixture".equals(existing.getRecordedFrom())) {
+                if (!FIXTURE.equals(existing.getRecordedFrom())) {
                     log.info("Leaving api:{} {} {} alone - recorded_from is '{}', not a fixture",
                             apiId, method, key, existing.getRecordedFrom());
                     return;
@@ -143,11 +149,11 @@ public class FixtureSeeder {
             recording.setScenarioId(scenarioId);
             recording.setSummary(summary);
             recording.setFixtureHash(hash);
-            recording.setRecordedFrom("fixture");
+            recording.setRecordedFrom(FIXTURE);
             recording.setRecordedAt(OffsetDateTime.now());
-            recording.setRecordedBy("fixture");
+            recording.setRecordedBy(FIXTURE);
             recording.setPublishedAt(OffsetDateTime.now());
-            recording.setPublishedBy("fixture");
+            recording.setPublishedBy(FIXTURE);
             recordings.save(recording);
             log.info("Seeded fixture api:{} {} {}", apiId, method, key);
         }
@@ -156,7 +162,7 @@ public class FixtureSeeder {
          * Over everything a consumer can observe. Changing a summary is a change - it shows on
          * {@code /scenarios} - so it has to move the hash too, or an edit would appear to do nothing.
          */
-        static String hash(final String operationId, final String method, final String key,
+        /* default */ static String hash(final String operationId, final String method, final String key,
                            final int status, final String body, final String summary) {
             final String canonical = String.join("\u0000",
                     operationId, method, key, String.valueOf(status), body,

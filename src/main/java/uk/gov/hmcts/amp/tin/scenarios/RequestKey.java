@@ -23,7 +23,7 @@ public final class RequestKey {
     private RequestKey() {
     }
 
-    public static String of(final String shortCode, final String path, final String queryString) {
+    public static String from(final String shortCode, final String path, final String queryString) {
         final String withoutPrefix = stripPrefix(shortCode, path);
         final String normalisedPath = trimSlashes(withoutPrefix).toLowerCase(Locale.ROOT);
         final String query = normaliseQuery(queryString);

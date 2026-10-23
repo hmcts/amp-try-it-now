@@ -47,7 +47,7 @@ public class ReplayController {
         }
 
         final String method = request.getMethod();
-        final String key = RequestKey.of(shortCode, request.getRequestURI(), request.getQueryString());
+        final String key = RequestKey.from(shortCode, request.getRequestURI(), request.getQueryString());
         final Optional<Scenario> found = catalogue.find(shortCode, method, key);
 
         if (found.isEmpty()) {

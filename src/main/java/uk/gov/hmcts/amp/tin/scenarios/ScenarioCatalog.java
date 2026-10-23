@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class ScenarioCatalog {
 
-    private static final TypeReference<Map<String, String>> HEADERS = new TypeReference<>() {
+    private static final TypeReference<Map<String, String>> HEADERS_TYPE = new TypeReference<>() {
     };
 
     private final RecordingRepository recordings;
@@ -114,7 +114,7 @@ public class ScenarioCatalog {
             return Map.of();
         }
         try {
-            return mapper.readValue(raw, HEADERS);
+            return mapper.readValue(raw, HEADERS_TYPE);
         } catch (final Exception malformed) {
             // One bad row must not take the whole API's refresh down with it.
             log.warn("Recording {} has unreadable response_headers; serving none", recording.getId());
@@ -122,7 +122,7 @@ public class ScenarioCatalog {
         }
     }
 
-    ApiDefinition requireApi(final String shortCode) {
+    /* default */ ApiDefinition requireApi(final String shortCode) {
         return registry.byShortCode(shortCode)
                 .orElseThrow(() -> new IllegalArgumentException("No such API: " + shortCode));
     }
