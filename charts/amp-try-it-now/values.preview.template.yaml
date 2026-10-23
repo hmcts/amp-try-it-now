@@ -5,7 +5,7 @@ java:
   environment:
     AUTH_KEY_SOURCE: "SELF_ISSUED"
   keyVaults:
-    amp:
+    amp-try-it-now:
       secrets:
         - name: try-it-now-POSTGRES-USER
           alias: POSTGRES_USER

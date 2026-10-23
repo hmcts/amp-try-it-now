@@ -22,7 +22,7 @@ spring:
   application:
     name: amp-try-it-now
   config:
-    import: "optional:configtree:/mnt/secrets/amp/,optional:configtree:/mnt/secrets/amp-sbox/"
+    import: "optional:configtree:/mnt/secrets/amp-try-it-now/,optional:configtree:/mnt/secrets/amp-try-it-now-sbox/"
   jpa:
     open-in-view: false
   datasource:
