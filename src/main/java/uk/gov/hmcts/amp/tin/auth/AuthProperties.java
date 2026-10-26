@@ -49,19 +49,19 @@ public class AuthProperties {
     @PostConstruct
     /* default */ void check() {
         if (isEntraRealm()) {
-            require(tenantId, "auth.tenant-id");
-            require(issuer, "auth.issuer");
-            require(jwksUri, "auth.jwks-uri");
+            require(tenantId, "auth.tenant-id", keySource);
+            require(issuer, "auth.issuer", keySource);
+            require(jwksUri, "auth.jwks-uri", keySource);
         } else {
-            require(audience, "auth.audience");
+            require(audience, "auth.audience", keySource);
         }
         log.info("Auth initialised realm:{} issuer:{} clockSkewSeconds:{}",
                 keySource, issuer.isBlank() ? "self" : issuer, clockSkewSeconds);
     }
 
-    private static void require(final String value, final String name) {
+    private static void require(final String value, final String name, final String realm) {
         if (value == null || value.isBlank()) {
-            throw new IllegalStateException(name + " must be set for auth.key-source=" + name);
+            throw new IllegalStateException(name + " must be set for auth.key-source=" + realm);
         }
     }
 
