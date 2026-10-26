@@ -1,0 +1,25 @@
+#!groovy
+
+// The Jenkinsfile the SANDBOX controller looks for, and the only one it looks for.
+//
+// cnp-jenkins-config/jobdsl/organisations-beta.groovy:
+//
+//     jenkinsfilePath: isSandbox() ? 'Jenkinsfile_parameterized' : 'Jenkinsfile_CNP'
+//
+// So on sandbox-build the org scan builds its project factory around this path. A repo with only
+// Jenkinsfile_CNP is scanned, matches no factory and produces no job at all - no error, nothing in
+// the folder, which is a confusing way to lose an afternoon. The non-sandbox controllers use
+// Jenkinsfile_CNP, so both files are needed and they are not alternatives.
+//
+// Sandbox is the only choice offered. Demo is the last environment for Try It Now and there is no
+// production deployment, so the list does not grow past what cnp-flux-config actually deploys.
+
+@Library('Infrastructure') _
+
+properties([
+    parameters([
+        choice(name: 'ENVIRONMENT', defaultValue: 'sandbox', choices: 'sandbox', description: 'Environment to deploy infrastructure to'),
+    ])
+])
+
+withParameterizedPipeline('java', 'amp', 'try-it-now', params.ENVIRONMENT, 'sandbox') {}
