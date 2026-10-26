@@ -86,6 +86,26 @@ configurations {
   smokeTestRuntimeOnly.extendsFrom runtimeOnly
 }
 
+// https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/configuration.html
+// The OWASP plugin comes from uk.gov.hmcts.java, and CI runs dependencyCheckAggregate with
+// failBuild=true at a CVSS threshold of 0.0 - so every match fails the build, false positives
+// included. Copied from try-slc; keep the two in step.
+dependencyCheck {
+  suppressionFile = 'config/owasp/suppressions.xml'
+}
+
+// Forced ahead of the Spring Boot 4.1.1 BOM, which pins tomcat 11.0.24.
+//
+// That version carries CVE-2026-65637, -65905, -65182, -68525, -65183, -66422, -68569, -65927,
+// -68763, -73180 and -66299. Only the last is in the suppressions file, because the rest are real
+// and 11.0.25 fixes them - suppressing them would be hiding them. try-slc forces the same
+// version for the same reason. Drop this line when a Spring Boot release pins 11.0.25 or later.
+ext['tomcat.version'] = '11.0.25'
+
+// NOT copied from try-slc: it carries ext['snakeyaml.version'] = '2.0', which was a fix back when
+// the BOM pinned a 1.x. This BOM pins 2.5/2.6, so the same line here resolves as 2.5 -> 2.0 - a
+// downgrade, and a quiet one. Left out deliberately; do not add it for symmetry.
+
 dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation 'org.springframework.boot:spring-boot-starter-actuator'

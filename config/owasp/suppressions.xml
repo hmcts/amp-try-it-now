@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+  <!--Please add all the false positives under the below section-->
+  <suppress>
+    <notes>False Positive
+      <![CDATA[file name: jackson-databind-2.15.2.jar]]>
+    </notes>
+    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+    <cve>CVE-2023-35116</cve>
+  </suppress>
+  <!--CVE present in log4j-api 2.25.4 (BOM version); no fix available-->
+  <suppress>
+    <notes>CVE-2026-49844 affects log4j-api; no patched version available from Spring Boot BOM</notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/log4j\-api@.*$</packageUrl>
+    <cve>CVE-2026-49844</cve>
+  </suppress>
+  <!--Tomcat embedded in spring-boot-starter-web; version governed by Spring Boot BOM-->
+  <suppress>
+    <notes>Tomcat 11.0.22 CVEs - version managed by Spring Boot BOM</notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/.*@.*$</packageUrl>
+    <cve>CVE-2026-53434</cve>
+  </suppress>
+  <suppress>
+    <notes>Tomcat 11.0.22 CVEs - version managed by Spring Boot BOM</notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/.*@.*$</packageUrl>
+    <cve>CVE-2026-55276</cve>
+  </suppress>
+  <suppress>
+    <notes>Tomcat 11.0.22 CVEs - version managed by Spring Boot BOM</notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/.*@.*$</packageUrl>
+    <cve>CVE-2026-59083</cve>
+  </suppress>
+  <suppress>
+    <notes>Tomcat 11.0.22 CVEs - version managed by Spring Boot BOM</notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/.*@.*$</packageUrl>
+    <cve>CVE-2026-59084</cve>
+  </suppress>
+  <suppress>
+    <notes>Tomcat 11.0.22 CVEs - version managed by Spring Boot BOM</notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/.*@.*$</packageUrl>
+    <cve>CVE-2026-53404</cve>
+  </suppress>
+  <suppress>
+    <notes>Tomcat 11.0.22 CVEs - version managed by Spring Boot BOM</notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/.*@.*$</packageUrl>
+    <cve>CVE-2026-55955</cve>
+  </suppress>
+  <suppress>
+    <notes>Tomcat 11.0.22 CVEs - version managed by Spring Boot BOM</notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/.*@.*$</packageUrl>
+    <cve>CVE-2026-55956</cve>
+  </suppress>
+  <suppress>
+    <notes>Tomcat 11.0.22 CVEs - version managed by Spring Boot BOM</notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/.*@.*$</packageUrl>
+    <cve>CVE-2026-50229</cve>
+  </suppress>
+  <suppress>
+    <notes>Tomcat 11.0.22 CVEs - version managed by Spring Boot BOM</notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/.*@.*$</packageUrl>
+    <cve>CVE-2026-66299</cve>
+  </suppress>
+  <!--CVE-2026-42154 is a missing length check on the /api/v1/read remote-read endpoint of Prometheus
+      THE SERVER (Go, github.com/prometheus/prometheus, fixed in 3.5.3 and 3.11.3). This service ships
+      the Java client library instead - github.com/prometheus/client_java, as
+      io.prometheus:prometheus-metrics-* 1.7.0 via micrometer-registry-prometheus. It exposes a scrape
+      endpoint and implements no remote-read API, so the vulnerable code path does not exist here.
+      Different project, different language, no shared code: dependency-check matches on the
+      "prometheus" product name, and our 1.7.0 falls inside the server's "< 3.5.3" range by coincidence.
+      Re-check this if the service ever gains a real Prometheus server dependency.-->
+  <suppress>
+    <notes>CVE-2026-42154 affects the Prometheus server (Go), not the io.prometheus Java client</notes>
+    <packageUrl regex="true">^pkg:maven/io\.prometheus/.*@.*$</packageUrl>
+    <cve>CVE-2026-42154</cve>
+  </suppress>
+  <suppress>
+    <notes>CVE-2026-42154 affects the Prometheus server (Go), not micrometer's Prometheus registry</notes>
+    <packageUrl regex="true">^pkg:maven/io\.micrometer/micrometer\-registry\-prometheus@.*$</packageUrl>
+    <cve>CVE-2026-42154</cve>
+  </suppress>
+  <!--End of false positives section -->
+</suppressions>
