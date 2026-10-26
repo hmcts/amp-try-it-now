@@ -5,6 +5,24 @@ plugins {
   id 'org.springframework.boot' version '4.1.1'
   // https://github.com/hmcts/gradle-java-plugin
   id 'uk.gov.hmcts.java' version '0.12.70'
+  // The CNP pipeline runs `./gradlew sonarqube` unconditionally. Without this plugin the task
+  // does not exist and the build fails with "Task 'sonarqube' not found in root project", after
+  // the image has already been pushed - so it reads as a late failure rather than a missing
+  // plugin. Version pinned to try-slc's.
+  id 'org.sonarqube' version '7.5.0.8588'
+}
+
+// Sonar needs the coverage report, and nothing else orders the two.
+tasks.sonarqube.dependsOn(jacocoTestReport)
+
+sonarqube {
+  properties {
+    property "sonar.projectName", "HMCTS :: Try It Now :: Engine"
+    // A SonarCloud project identity, not a derivative of the group or the package. It is fixed
+    // from the first analysis onwards - changing it later orphans the project and its history.
+    property "sonar.projectKey", "uk.gov.hmcts.amp:amp-try-it-now"
+    property "sonar.coverage.exclusions", "**/Application.java"
+  }
 }
 
 group = 'uk.gov.hmcts.amp.tin'
