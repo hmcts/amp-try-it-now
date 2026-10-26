@@ -94,7 +94,7 @@ class ControllersTest {
         when(catalogue.find(eq("slc"), eq("GET"), any())).thenReturn(Optional.of(SLC_OK));
 
         final ResponseEntity<String> response =
-                replay.replay(request("GET", "/slc/case/TIN-ALLOCATED-01/courtschedule", null));
+                replay.replay("slc", request("GET", "/slc/case/TIN-ALLOCATED-01/courtschedule", null));
 
         assertThat(response.getStatusCode().value()).isEqualTo(200);
         assertThat(response.getBody()).isEqualTo("{\"courtSchedule\":[]}");
@@ -110,7 +110,7 @@ class ControllersTest {
         when(catalogue.find(eq("slc"), eq("GET"), any())).thenReturn(Optional.of(recorded404));
 
         final ResponseEntity<String> response =
-                replay.replay(request("GET", "/slc/case/NOPE/courtschedule", null));
+                replay.replay("slc", request("GET", "/slc/case/NOPE/courtschedule", null));
 
         // The recorded 404 is the demonstrated API's own, and must not be confused with the
         // engine's "nothing recorded" 404 - which is why the body matters, not just the status.
@@ -124,7 +124,7 @@ class ControllersTest {
         when(catalogue.find(any(), any(), any())).thenReturn(Optional.empty());
 
         final ResponseEntity<String> response =
-                replay.replay(request("GET", "/slc/case/UNKNOWN/courtschedule", null));
+                replay.replay("slc", request("GET", "/slc/case/UNKNOWN/courtschedule", null));
 
         assertThat(response.getStatusCode().value()).isEqualTo(404);
         assertThat(response.getBody()).contains("not_found").contains("/slc/scenarios");
@@ -134,7 +134,7 @@ class ControllersTest {
     @DisplayName("an unregistered short code never reaches the catalogue")
     void replayUnregisteredApi() {
         final ResponseEntity<String> response =
-                replay.replay(request("GET", "/nope/anything", null));
+                replay.replay("nope", request("GET", "/nope/anything", null));
 
         assertThat(response.getStatusCode().value()).isEqualTo(404);
         assertThat(response.getBody()).contains("No API is registered at this path.");
@@ -147,7 +147,7 @@ class ControllersTest {
                 .thenReturn(Optional.of(SLC_OK));
 
         final ResponseEntity<String> response =
-                replay.replay(request("GET", "/slc/case/ABC/courtschedule", "page=2"));
+                replay.replay("slc", request("GET", "/slc/case/ABC/courtschedule", "page=2"));
 
         assertThat(response.getStatusCode().value()).isEqualTo(200);
     }

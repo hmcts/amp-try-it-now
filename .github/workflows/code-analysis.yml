@@ -19,7 +19,7 @@ jobs:
           distribution: 'temurin'
           java-version: '25'
 
-      - uses: pmd/pmd-github-action@v2
+      - uses: pmd/pmd-github-action@d9c1f3c5940cbf5923f1354e83fa858b4496ebaa # v2
         id: pmd
         continue-on-error: true
         with:

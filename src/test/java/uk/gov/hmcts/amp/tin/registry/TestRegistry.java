@@ -36,6 +36,11 @@ public final class TestRegistry {
                 new DefaultResourceLoader(), environment, "classpath:registry/apis.yaml", keySource);
         try {
             registry.load();
+        } catch (final RuntimeException refused) {
+            // Rethrown as-is. A startup refusal carries the reason the deployment is wrong - which
+            // variable is unset, and why a blank audience is not survivable - and that message is
+            // the thing worth asserting on, so wrapping it here would hide what these tests check.
+            throw refused;
         } catch (final Exception unloadable) {
             throw new IllegalStateException("Could not load the registry for a test", unloadable);
         }

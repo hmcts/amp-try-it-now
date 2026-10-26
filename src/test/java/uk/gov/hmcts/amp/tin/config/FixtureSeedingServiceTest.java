@@ -5,12 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.amp.tin.entity.RecordingEntity;
 import uk.gov.hmcts.amp.tin.entity.RecordingStatus;
 import uk.gov.hmcts.amp.tin.registry.TestRegistry;
 import uk.gov.hmcts.amp.tin.repository.RecordingRepository;
+import uk.gov.hmcts.amp.tin.scenarios.ScenarioCatalog;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -19,8 +24,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -133,18 +140,22 @@ class FixtureSeedingServiceTest {
         verify(recordings).save(any(RecordingEntity.class));
     }
 
-    @Test
+    @ParameterizedTest(name = "recorded_from=admin-api, fixture_hash={0}")
+    @NullSource
+    @ValueSource(strings = {"a-hash-from-somewhere-else"})
     @DisplayName("a row that did not come from a fixture is left exactly where it is")
-    void doesNotOverwriteANonFixtureRecording() throws Exception {
-        final RecordingEntity published = live(null, "admin-api");
+    void doesNotOverwriteANonFixtureRecording(final String foreignHash) throws Exception {
+        final RecordingEntity published = live(foreignHash, "admin-api");
         when(recordings.findFirstByApiIdAndMethodAndRequestKeyAndStatus(any(), any(), any(), any()))
                 .thenReturn(Optional.of(published));
 
         seeding.seedFile(fixture(FIXTURE_JSON));
 
         // The invariant that makes the admin API safe to build: a redeploy must not undo what
-        // someone published. Note the hash differs, so this is NOT the no-op path - the guard that
-        // stops it is recordedFrom, and this is the only test that distinguishes the two.
+        // someone published. Both hashes are run because they enter by different doors - a null
+        // hash is what the admin API actually writes, and a non-null one proves the guard is
+        // recorded_from rather than "the hash happened not to match", which is the only reading
+        // under which this test would pass for the wrong reason.
         assertThat(published.getStatus()).isEqualTo(RecordingStatus.PUBLISHED);
         verify(recordings, never()).save(any());
         verify(recordings, never()).saveAndFlush(any());
@@ -183,15 +194,27 @@ class FixtureSeedingServiceTest {
     }
 
     @Test
-    @DisplayName("seedAll loads the real committed fixtures without throwing")
-    void seedAllReadsTheCommittedFixtures() throws Exception {
+    @DisplayName("the real committed fixtures all seed, through the runner that drives them")
+    void everyCommittedFixtureSeeds() throws Exception {
         when(recordings.findFirstByApiIdAndMethodAndRequestKeyAndStatus(any(), any(), any(), any()))
                 .thenReturn(Optional.empty());
 
-        seeding.seedAll();
+        new FixtureSeeder().seedFixtures(seeding, mock(ScenarioCatalog.class)).run(null);
 
-        // slc has seven and rcc four, all committed under src/main/resources/fixtures.
-        verify(recordings, org.mockito.Mockito.atLeast(11)).save(any(RecordingEntity.class));
+        // Every scenario committed under src/main/resources/fixtures reaches the repository. The
+        // count is read from the files rather than written down here, so adding a scenario to a
+        // fixture does not quietly stop being covered.
+        verify(recordings, times(committedScenarioCount())).save(any(RecordingEntity.class));
+    }
+
+    private static int committedScenarioCount() throws Exception {
+        final ObjectMapper mapper = new ObjectMapper();
+        int total = 0;
+        for (final Resource file : new FixtureSeeder.FixtureSeedingService(
+                null, null, mapper).fixtureFiles()) {
+            total += mapper.readTree(file.getInputStream()).path("scenarios").size();
+        }
+        return total;
     }
 
     @Test
@@ -242,17 +265,41 @@ class FixtureSeedingServiceTest {
     }
 
     @Test
-    @DisplayName("the seeding runner refreshes the catalogue after writing")
-    void runnerRefreshesTheCatalogue() throws Exception {
-        final FixtureSeeder.FixtureSeedingService service = mock(FixtureSeeder.FixtureSeedingService.class);
-        final uk.gov.hmcts.amp.tin.scenarios.ScenarioCatalog catalogue =
-                mock(uk.gov.hmcts.amp.tin.scenarios.ScenarioCatalog.class);
+    @DisplayName("one unreadable fixture does not stop the others, or the refresh")
+    void runnerToleratesOneBadFixture() throws Exception {
+        final FixtureSeeder.FixtureSeedingService service =
+                mock(FixtureSeeder.FixtureSeedingService.class);
+        final ScenarioCatalog catalogue = mock(ScenarioCatalog.class);
+        final Resource bad = fixture("{ this is not json");
+        final Resource good = fixture(FIXTURE_JSON);
+        when(service.fixtureFiles()).thenReturn(new Resource[] {bad, good});
+        doThrow(new java.io.IOException("unreadable")).when(service).seedFile(bad);
 
         new FixtureSeeder().seedFixtures(service, catalogue).run(null);
 
-        // Seeding without refreshing would leave the in-memory catalogue empty until the next
-        // restart, so /scenarios would report nothing while the rows were already there.
-        verify(service).seedAll();
+        // The tolerance moved to the runner along with the loop. Both halves matter: the good file
+        // is still seeded, and the catalogue is still refreshed - seeding without refreshing would
+        // leave /scenarios reporting nothing while the rows were already in the table.
+        verify(service).seedFile(good);
         verify(catalogue).refreshAll();
+    }
+
+    @Test
+    @DisplayName("seedFile is reached through the bean, so its transaction is a real one")
+    void seedingGoesThroughTheProxy() throws Exception {
+        // Guards the fix for the self-invocation this class was flagged for: if the loop ever moves
+        // back inside the service, seedFile is called on `this`, @Transactional is bypassed, and a
+        // scenario can archive its predecessor and then fail to insert its replacement - leaving no
+        // PUBLISHED row at all. The runner calling the injected bean is what keeps that honest.
+        assertThat(FixtureSeeder.FixtureSeedingService.class
+                .getMethod("fixtureFiles")
+                .getAnnotation(Transactional.class))
+                .as("resource lookup must stay outside the transaction")
+                .isNull();
+        assertThat(FixtureSeeder.FixtureSeedingService.class
+                .getMethod("seedFile", Resource.class)
+                .getAnnotation(Transactional.class))
+                .as("each file must be seeded in its own transaction")
+                .isNotNull();
     }
 }

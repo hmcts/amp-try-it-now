@@ -53,7 +53,20 @@ public class FixtureSeeder {
     /* default */ ApplicationRunner seedFixtures(final FixtureSeedingService seeding,
                                    final ScenarioCatalog catalogue) {
         return args -> {
-            seeding.seedAll();
+            // The loop lives here, not inside the service, so that each seedFile call goes through
+            // the injected bean - which is the transactional proxy. A self-call from seedAll would
+            // bypass it, and the per-file transaction the class promises would not exist at all:
+            // a scenario could archive its predecessor and then fail to insert its replacement,
+            // leaving no PUBLISHED row for that request.
+            for (final Resource file : seeding.fixtureFiles()) {
+                try {
+                    seeding.seedFile(file);
+                } catch (final Exception unreadable) {
+                    // One bad fixture must not stop the service starting for every other API.
+                    log.error("Could not seed fixture {}: {}",
+                            file.getFilename(), unreadable.getMessage());
+                }
+            }
             catalogue.refreshAll();
         };
     }
@@ -75,18 +88,13 @@ public class FixtureSeeder {
             this.mapper = mapper;
         }
 
-        public void seedAll() throws Exception {
-            final Resource[] files = new PathMatchingResourcePatternResolver()
+        /**
+         * Every committed fixture file. Deliberately not transactional and deliberately not
+         * looping: the caller drives the loop so each file is seeded through the proxy.
+         */
+        public Resource[] fixtureFiles() throws Exception {
+            return new PathMatchingResourcePatternResolver()
                     .getResources("classpath:fixtures/*.json");
-            for (final Resource file : files) {
-                try {
-                    seedFile(file);
-                } catch (final Exception unreadable) {
-                    // One bad fixture must not stop the service starting for every other API.
-                    log.error("Could not seed fixture {}: {}",
-                            file.getFilename(), unreadable.getMessage());
-                }
-            }
         }
 
         @Transactional

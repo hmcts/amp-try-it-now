@@ -4,7 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.amp.tin.registry.ApiRegistry;
 import uk.gov.hmcts.amp.tin.scenarios.RequestKey;
@@ -37,11 +39,14 @@ public class ReplayController {
         this.registry = registry;
     }
 
-    @RequestMapping("/{shortCode}/**")
-    public ResponseEntity<String> replay(final HttpServletRequest request) {
-        final String[] segments = request.getRequestURI().split("/");
-        final String shortCode = segments.length > 1 ? segments[1] : "";
-
+    // The verbs are named rather than left open: an unlisted method gets Spring's own 405 before
+    // any registry lookup, instead of resolving to a short code and reporting "no scenario
+    // recorded" - which would read as a missing recording rather than an unsupported method.
+    @RequestMapping(value = "/{shortCode}/**",
+            method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
+                      RequestMethod.PATCH, RequestMethod.DELETE})
+    public ResponseEntity<String> replay(@PathVariable final String shortCode,
+                                         final HttpServletRequest request) {
         if (!registry.isRegistered(shortCode)) {
             return notFound("No API is registered at this path.");
         }
