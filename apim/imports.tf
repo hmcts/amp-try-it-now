@@ -19,11 +19,13 @@
 # Keyed on short code then APIM instance, because this configuration registers one product per
 # API and each gets its own group.
 #
-#   "rcc" = {
-#     "sps-api-mgmt-sbox" = "/subscriptions/bd2864ed-4f3e-45ed-9c6a-8d179674bab1/resourceGroups/rg-sps-platform-sbox/providers/Microsoft.ApiManagement/service/sps-api-mgmt-sbox/products/try-it-now-cp-refdata-courthearing/groups/administrators"
-#   }
+# The sbox entry below is the first apply's error message, copied verbatim.
 locals {
-  administrators_product_group_ids = {}
+  administrators_product_group_ids = {
+    "rcc" = {
+      "sps-api-mgmt-sbox" = "/subscriptions/bd2864ed-4f3e-45ed-9c6a-8d179674bab1/resourceGroups/rg-sps-platform-sbox/providers/Microsoft.ApiManagement/service/sps-api-mgmt-sbox/products/try-it-now-cp-refdata-courthearing/groups/administrators"
+    }
+  }
 
   administrators_to_import = toset([
     for key, by_instance in local.administrators_product_group_ids :
