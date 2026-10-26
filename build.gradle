@@ -18,9 +18,15 @@ tasks.sonarqube.dependsOn(jacocoTestReport)
 sonarqube {
   properties {
     property "sonar.projectName", "HMCTS :: Try It Now :: Engine"
-    // A SonarCloud project identity, not a derivative of the group or the package. It is fixed
-    // from the first analysis onwards - changing it later orphans the project and its history.
-    property "sonar.projectKey", "uk.gov.hmcts.amp:amp-try-it-now"
+    // MUST be hmcts_<repo>, the key SonarCloud auto-provisions from the GitHub binding, because
+    // that is what the "SonarCloud Code Analysis" check on a PR reports against.
+    //
+    // try-slc uses a uk.gov.hmcts.cp:<repo> key and works, which makes the colon form look like
+    // the house style. It is not - its project was bound under that key before the GitHub
+    // integration existed. Setting it on a new repo analyses into a SECOND, empty project while
+    // the check keeps watching the auto-provisioned one, so the check fails with the analysis
+    // nowhere near it.
+    property "sonar.projectKey", "hmcts_amp-try-it-now"
     property "sonar.coverage.exclusions", "**/Application.java"
   }
 }
