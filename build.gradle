@@ -5,6 +5,50 @@ plugins {
   id 'org.springframework.boot' version '4.1.1'
   // https://github.com/hmcts/gradle-java-plugin
   id 'uk.gov.hmcts.java' version '0.12.70'
+  // The CNP pipeline runs `./gradlew sonarqube` unconditionally. Without this plugin the task
+  // does not exist and the build fails with "Task 'sonarqube' not found in root project", after
+  // the image has already been pushed - so it reads as a late failure rather than a missing
+  // plugin. Version pinned to try-slc's.
+  id 'org.sonarqube' version '7.5.0.8588'
+}
+
+// Sonar reads the XML report and nothing else; without this it logs "JaCoCo report task detected,
+// but XML report is not enabled" and reports the project at 0% coverage, which later fails a
+// quality gate for a reason that has nothing to do with the tests.
+jacocoTestReport {
+  reports {
+    xml.getRequired().set(true)
+    csv.getRequired().set(false)
+    html.getRequired().set(true)
+  }
+}
+
+// Sonar needs the coverage report, and nothing else orders the two.
+tasks.sonarqube.dependsOn(jacocoTestReport)
+
+sonarqube {
+  properties {
+    property "sonar.projectName", "HMCTS :: Try It Now :: Engine"
+    // uk.gov.hmcts.<product>:<repo>, matching try-slc. Deliberately NOT the hmcts_<repo> key
+    // SonarCloud auto-provisions from the GitHub binding.
+    //
+    // Both projects exist for every repo here. The auto-provisioned one is ALM-bound and runs
+    // Automatic Analysis, which posts the "SonarCloud Code Analysis" check. CI analysis must go
+    // somewhere else, because SonarCloud refuses to analyse a bound project that has Automatic
+    // Analysis enabled:
+    //
+    //     You are running CI analysis while Automatic Analysis is enabled.
+    //     > Task :sonarqube FAILED
+    //
+    // Pointing this at hmcts_amp-try-it-now was tried on PR #7 and failed exactly that way; the
+    // key below passed. try-slc is arranged the same: it analyses into
+    // uk.gov.hmcts.cp:try-cp-crime-schedulingandlisting-courtschedule while its check reports on
+    // hmcts_try-it-now-cp-crime-schedulingandlisting-courtschedule, and both are green.
+    //
+    // Fixed from the first analysis onwards - changing it later orphans the project's history.
+    property "sonar.projectKey", "uk.gov.hmcts.amp:amp-try-it-now"
+    property "sonar.coverage.exclusions", "**/Application.java"
+  }
 }
 
 group = 'uk.gov.hmcts.amp.tin'
@@ -41,6 +85,26 @@ configurations {
   smokeTestImplementation.extendsFrom testImplementation
   smokeTestRuntimeOnly.extendsFrom runtimeOnly
 }
+
+// https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/configuration.html
+// The OWASP plugin comes from uk.gov.hmcts.java, and CI runs dependencyCheckAggregate with
+// failBuild=true at a CVSS threshold of 0.0 - so every match fails the build, false positives
+// included. Copied from try-slc; keep the two in step.
+dependencyCheck {
+  suppressionFile = 'config/owasp/suppressions.xml'
+}
+
+// Forced ahead of the Spring Boot 4.1.1 BOM, which pins tomcat 11.0.24.
+//
+// That version carries CVE-2026-65637, -65905, -65182, -68525, -65183, -66422, -68569, -65927,
+// -68763, -73180 and -66299. Only the last is in the suppressions file, because the rest are real
+// and 11.0.25 fixes them - suppressing them would be hiding them. try-slc forces the same
+// version for the same reason. Drop this line when a Spring Boot release pins 11.0.25 or later.
+ext['tomcat.version'] = '11.0.25'
+
+// NOT copied from try-slc: it carries ext['snakeyaml.version'] = '2.0', which was a fix back when
+// the BOM pinned a 1.x. This BOM pins 2.5/2.6, so the same line here resolves as 2.5 -> 2.0 - a
+// downgrade, and a quiet one. Left out deliberately; do not add it for symmetry.
 
 dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-web'
