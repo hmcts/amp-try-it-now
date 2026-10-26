@@ -12,6 +12,17 @@ plugins {
   id 'org.sonarqube' version '7.5.0.8588'
 }
 
+// Sonar reads the XML report and nothing else; without this it logs "JaCoCo report task detected,
+// but XML report is not enabled" and reports the project at 0% coverage, which later fails a
+// quality gate for a reason that has nothing to do with the tests.
+jacocoTestReport {
+  reports {
+    xml.getRequired().set(true)
+    csv.getRequired().set(false)
+    html.getRequired().set(true)
+  }
+}
+
 // Sonar needs the coverage report, and nothing else orders the two.
 tasks.sonarqube.dependsOn(jacocoTestReport)
 
