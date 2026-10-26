@@ -30,6 +30,8 @@ One Try It Now engine serving a sandbox for every registered API. Follows the pa
 | 1.4 | Static analysis | ✅ | try-slc's `.github/pmd-ruleset.xml`, CodeQL config and both workflows, copied unchanged. They produce the three check names the branch ruleset requires. The ruleset found 16 violations here and none in try-slc, so the code was brought up to it — no excludes, no `@SuppressWarnings` |
 | 1.5 | Branch ruleset | ✅ Applied | Ruleset `25736208`, byte-identical to try-slc's `24376232`: block deletion and force-push, PR required with conversation resolution and no approvals, and the three checks `Analyze (java)`, `CodeQL`, `pmd-analysis`. Applied only after all three went green on PR #2. Payload kept in `platform-prs/branch-ruleset.json`. The Jenkins build check joins it after the first green CNP build |
 
+| 1.6 | `Jenkinsfile_parameterized` | ✅ Added 2026-10-26 | **The sandbox controller looks for this file and no other.** `jobdsl/organisations-beta.groovy`: `jenkinsfilePath: isSandbox() ? 'Jenkinsfile_parameterized' : 'Jenkinsfile_CNP'`. Without it the repo is scanned, matches no project factory and produces no job — nothing in `HMCTS_a_to_c_Sandbox`, and no error anywhere. Both files are needed; they are not alternatives |
+
 ## Phase 2 — Terraform
 
 | # | Step | Status | Notes |
