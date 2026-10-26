@@ -29,15 +29,24 @@ tasks.sonarqube.dependsOn(jacocoTestReport)
 sonarqube {
   properties {
     property "sonar.projectName", "HMCTS :: Try It Now :: Engine"
-    // MUST be hmcts_<repo>, the key SonarCloud auto-provisions from the GitHub binding, because
-    // that is what the "SonarCloud Code Analysis" check on a PR reports against.
+    // uk.gov.hmcts.<product>:<repo>, matching try-slc. Deliberately NOT the hmcts_<repo> key
+    // SonarCloud auto-provisions from the GitHub binding.
     //
-    // try-slc uses a uk.gov.hmcts.cp:<repo> key and works, which makes the colon form look like
-    // the house style. It is not - its project was bound under that key before the GitHub
-    // integration existed. Setting it on a new repo analyses into a SECOND, empty project while
-    // the check keeps watching the auto-provisioned one, so the check fails with the analysis
-    // nowhere near it.
-    property "sonar.projectKey", "hmcts_amp-try-it-now"
+    // Both projects exist for every repo here. The auto-provisioned one is ALM-bound and runs
+    // Automatic Analysis, which posts the "SonarCloud Code Analysis" check. CI analysis must go
+    // somewhere else, because SonarCloud refuses to analyse a bound project that has Automatic
+    // Analysis enabled:
+    //
+    //     You are running CI analysis while Automatic Analysis is enabled.
+    //     > Task :sonarqube FAILED
+    //
+    // Pointing this at hmcts_amp-try-it-now was tried on PR #7 and failed exactly that way; the
+    // key below passed. try-slc is arranged the same: it analyses into
+    // uk.gov.hmcts.cp:try-cp-crime-schedulingandlisting-courtschedule while its check reports on
+    // hmcts_try-it-now-cp-crime-schedulingandlisting-courtschedule, and both are green.
+    //
+    // Fixed from the first analysis onwards - changing it later orphans the project's history.
+    property "sonar.projectKey", "uk.gov.hmcts.amp:amp-try-it-now"
     property "sonar.coverage.exclusions", "**/Application.java"
   }
 }
