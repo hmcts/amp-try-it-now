@@ -45,6 +45,16 @@ variable "ci_service_principal_object_id" {
   default     = ""
 }
 
+# Written into terraform.auto.tfvars rather than passed with -var, which is why its absence is a
+# warning rather than the hard failure the variables above would cause. Declared to keep it out of
+# every run's output; nothing here uses it, and the tags that matter are set by the Jenkins-side
+# configuration in infrastructure/.
+variable "common_tags" {
+  type        = any
+  description = "Common tags, injected by CI. Unused here."
+  default     = {}
+}
+
 # ─── Module-specific variables ───
 
 variable "api_mgmt_rg" {
