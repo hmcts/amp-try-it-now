@@ -21,6 +21,16 @@ data "azurerm_user_assigned_identity" "jenkins" {
   resource_group_name = "managed-identities-${var.env}-rg"
 }
 
+# The product-wide identity the pods run as - amp-sandbox-mi, amp-aat-mi, amp-demo-mi. Looked up,
+# never created: try-cp-crime-schedulingandlisting-courtschedule creates it, being amp's first
+# component, and the name carries no component segment so a second creator collides.
+#
+# No sandbox special case, unlike jenkins above: this one really is amp-sandbox-mi.
+data "azurerm_user_assigned_identity" "amp" {
+  name                = "${var.product}-${var.env}-mi"
+  resource_group_name = "managed-identities-${var.env}-rg"
+}
+
 # Resource group and Key Vault are COMPONENT-scoped, following try-slc.
 #
 # Product-scoped names ("${var.product}-shared-${var.env}") cannot work here: every amp repo builds
@@ -33,10 +43,12 @@ resource "azurerm_resource_group" "rg" {
   tags     = local.tags
 }
 
-# create_managed_identity is FALSE here, and that is the important line.
+# create_managed_identity is FALSE here, and that is the important line - but on its own it also
+# granted the identity nothing, which is the bug this fixes. managed_identity_object_id above is
+# what puts amp-{env}-mi into the vault's access policies without creating it.
 #
 # cnp-module-key-vault names the identity "${var.product}-${local.env}-mi" with no component
-# segment, so it is product-wide by construction - amp-sbox-mi, amp-aat-mi. There is one per
+# segment, so it is product-wide by construction - amp-sandbox-mi, amp-aat-mi. There is one per
 # namespace and it is what the Flux workload-identity service account federates against.
 # try-cp-crime-schedulingandlisting-courtschedule creates it, being amp's first component. Any
 # other amp repo setting this true collides on the name.
@@ -50,7 +62,7 @@ module "vault" {
   resource_group_name                  = azurerm_resource_group.rg.name
   product_group_name                   = "DTS API Marketplace"
   common_tags                          = local.tags
-  managed_identity_object_id           = var.managed_identity_object_id
+  managed_identity_object_id           = data.azurerm_user_assigned_identity.amp.principal_id
   create_managed_identity              = false
   additional_managed_identities_access = var.additional_managed_identities_access
   jenkins_object_id                    = data.azurerm_user_assigned_identity.jenkins.principal_id
