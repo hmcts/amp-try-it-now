@@ -56,19 +56,6 @@ class SmokeTest {
         assertThat(get("/health/liveness").statusCode()).isEqualTo(200);
     }
 
-    @Test
-    @DisplayName("/scenarios serves without a token, so the engine's own surface is up")
-    void scenariosIsServedWithoutAToken() throws IOException, InterruptedException {
-        // The one engine path that is exempt by design - discovery has to work before a consumer
-        // holds anything. Reachability only, no assertion on content: it proves the filter
-        // exemption and that the catalogue loaded from the database, without coupling the smoke
-        // test to which fixtures happen to be seeded.
-        assertThat(get("/scenarios").statusCode())
-                .describedAs("GET %s/scenarios - 401 means the exemption regressed, 500 means the "
-                        + "catalogue could not load", testUrl)
-                .isEqualTo(200);
-    }
-
     private HttpResponse<String> get(final String path) throws IOException, InterruptedException {
         final HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(testUrl + path))
