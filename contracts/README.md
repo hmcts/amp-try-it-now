@@ -6,6 +6,7 @@ Two kinds of file, and they are maintained in opposite ways.
 |---|---|---|
 | `try-it-now-sandbox.openapi.yml` | This engine's own discovery endpoint | Hand-written here, and it must track `ScenariosController` |
 | `rcc-courthouses.openapi.yml` | The real API the `rcc` sandbox demonstrates | **Vendored.** A copy of a published `api-cp-*` tag — do not edit |
+| `slc-courtschedule.openapi.yml` | The real API the `slc` sandbox demonstrates | **Vendored**, and from the published *artefact* rather than the api-cp repository — the two differ. Its header says why |
 
 APIM merges one of each into a single published API, so a consumer sees the sandbox plumbing and
 the real shape together rather than two half-APIs. See `../apim/README.md`.
