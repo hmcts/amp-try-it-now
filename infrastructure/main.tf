@@ -21,14 +21,29 @@ data "azurerm_user_assigned_identity" "jenkins" {
   resource_group_name = "managed-identities-${var.env}-rg"
 }
 
-# The product-wide identity the pods run as - amp-sandbox-mi, amp-aat-mi, amp-demo-mi. Looked up,
-# never created: try-cp-crime-schedulingandlisting-courtschedule creates it, being amp's first
-# component, and the name carries no component segment so a second creator collides.
+# The product-wide identity the pods run as - amp-sandbox-mi, amp-aat-mi, amp-demo-mi. CREATED
+# here now, where it used to be looked up.
 #
-# No sandbox special case, unlike jenkins above: this one really is amp-sandbox-mi.
-data "azurerm_user_assigned_identity" "amp" {
+# try-cp-crime-schedulingandlisting-courtschedule created it, being amp's first component, and this
+# repository read it as a data source. That component is being retired: its infrastructure is
+# released from Terraform in try-cp-...#59, after which nothing creates this identity at all. It
+# would survive - the release is destroy = false, and it lives in managed-identities-${var.env}-rg
+# rather than in any component's resource group - but it would be owned by nobody, and it is what
+# the Flux workload-identity service account federates against for the whole amp namespace
+# (${WI_NAME}-${WI_ENVIRONMENT}-mi in apps/amp/base).
+#
+# It is a plain resource rather than cnp-module-key-vault's create_managed_identity, deliberately.
+# That flag also adds implicit_managed_identity_access_policy, which would collide with the
+# explicit policy this vault already has for the same identity - two access policies, one vault,
+# one object id. Owning the identity directly changes nothing about the vault.
+#
+# NO SANDBOX SPECIAL CASE, unlike jenkins above: this one really is amp-sandbox-mi, in
+# managed-identities-sandbox-rg.
+resource "azurerm_user_assigned_identity" "amp" {
   name                = "${var.product}-${var.env}-mi"
   resource_group_name = "managed-identities-${var.env}-rg"
+  location            = var.location
+  tags                = local.tags
 }
 
 # Resource group and Key Vault are COMPONENT-scoped, following try-slc.
@@ -43,15 +58,13 @@ resource "azurerm_resource_group" "rg" {
   tags     = local.tags
 }
 
-# create_managed_identity is FALSE here, and that is the important line - but on its own it also
-# granted the identity nothing, which is the bug this fixes. managed_identity_object_id above is
-# what puts amp-{env}-mi into the vault's access policies without creating it.
+# create_managed_identity stays FALSE, even though this repository now owns the identity.
 #
-# cnp-module-key-vault names the identity "${var.product}-${local.env}-mi" with no component
-# segment, so it is product-wide by construction - amp-sandbox-mi, amp-aat-mi. There is one per
-# namespace and it is what the Flux workload-identity service account federates against.
-# try-cp-crime-schedulingandlisting-courtschedule creates it, being amp's first component. Any
-# other amp repo setting this true collides on the name.
+# The module would name it "${var.product}-${local.env}-mi" - product-wide, no component segment -
+# which is the right name, but it would also add implicit_managed_identity_access_policy on top of
+# the explicit policy managed_identity_object_id already produces. Two access policies for one
+# object id on one vault is an apply error, so the identity is created above instead and this line
+# is left alone. Any amp repo setting this true still collides on the name.
 module "vault" {
   source                               = "git@github.com:hmcts/cnp-module-key-vault?ref=master"
   name                                 = var.vault_name != "" ? var.vault_name : "${var.product}-${var.component}-${var.env}"
@@ -62,7 +75,7 @@ module "vault" {
   resource_group_name                  = azurerm_resource_group.rg.name
   product_group_name                   = "DTS API Marketplace"
   common_tags                          = local.tags
-  managed_identity_object_id           = data.azurerm_user_assigned_identity.amp.principal_id
+  managed_identity_object_id           = azurerm_user_assigned_identity.amp.principal_id
   create_managed_identity              = false
   additional_managed_identities_access = var.additional_managed_identities_access
   jenkins_object_id                    = data.azurerm_user_assigned_identity.jenkins.principal_id
