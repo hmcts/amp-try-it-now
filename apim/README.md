@@ -36,9 +36,10 @@ working perfectly.
 
 One API, made of two specs merged at import time:
 
-* `../contracts/try-it-now-sandbox.openapi.yml` — `GET /scenarios`, the discovery endpoint.
-* `../contracts/rcc-courthouses.openapi.yml` — a vendored copy of the demonstrated API's own
-  contract at a pinned tag.
+* `../contracts/try-it-now-sandbox.openapi.yml` — `GET /scenarios`, the discovery endpoint. The
+  same file for every API.
+* the demonstrated API's own contract, vendored at a pinned version: `rcc-courthouses.openapi.yml`
+  for `rcc`, `slc-courtschedule.openapi.yml` for `slc`.
 
 `expose_paths` allow-lists what is taken from the first; everything in the second is published.
 Schemas are merged, and `merge()` resolves a collision by silently letting one side win — so
@@ -59,8 +60,8 @@ so the audience is the entire access boundary between them — a gateway-wide au
 token minted for one sandbox valid against all of them, which is the hole the per-API resource
 apps exist to close.
 
-`sbox.tfvars` currently leaves both unset, because the sandbox pod runs `SELF_ISSUED`. The three
-changes that flip it, in order, are listed in that file.
+`sbox.tfvars` sets both: the sandbox pod has run `ENTRA` since 29 October, and the gateway
+followed it. The ordering that made that safe is recorded in that file.
 
 ## Two applies per environment, the first time
 
@@ -70,30 +71,30 @@ did not create. The fix is an import — but an import block naming an object th
 fails at **plan**, so it cannot be written ahead of time. Apply, add the entry to
 `imports.tf` (the shape is in a comment there), apply again. The second is a one-line change.
 
+## slc is adopted, not created
+
+`slc`'s product and API were registered by try-slc and carry **19 live subscriptions**. Keys
+belong to a product, so recreating it would invalidate every one of them. `imports.tf` therefore
+brings the existing product, its three groups, the API, the product link and the policy into this
+state, and the only thing that changes in Azure is `service_url`.
+
+Two consequences worth knowing before editing the `slc` entries:
+
+* **The API is called `try-it-now---public-api`**, a name try-slc derived from its spec title. It
+  is pinned explicitly in the tfvars. Let it derive the way `rcc` does and Terraform plans a second
+  API on the same `amp/try/slc` path instead of adopting this one.
+* **try-slc must release it first.** Its `apim/` configuration drops the product and API with
+  `removed` blocks, which take them out of its state without destroying them. Adopting before that
+  lands leaves two states believing they own the same resources.
+
 ## Prerequisites that are not in this repository
 
-Neither exists for `hmcts/amp-try-it-now` yet, and without them every run fails at Azure login
-before the terraform is evaluated:
+Both are in place, and were the two things that blocked the first apply:
 
-1. **A federated credential** on the deploy app, scoped to `repo:hmcts/amp-try-it-now`.
-2. **Three repository variables**, matching try-slc's:
+1. **A federated credential** on the deploy app scoped to `repo:hmcts/amp-try-it-now`, added by
+   [azure-github-federation-config#108](https://github.com/hmcts/azure-github-federation-config/pull/108).
+2. **The `AZURE_*` repository variables**, set 23 October. `TFSTATE_STORAGE_ACCOUNT_NONPROD` is an
+   organisation variable and is inherited.
 
-   | Variable | Value |
-   |---|---|
-   | `AZURE_CLIENT_ID_SBOX` | `72a7651d-9d2a-4c04-9085-957efeab0e53` |
-   | `AZURE_SUBSCRIPTION_ID_SBOX` | `bd2864ed-4f3e-45ed-9c6a-8d179674bab1` |
-   | `AZURE_SUBSCRIPTION_SBOX` | `DTS-SPS-SBOX` |
-
-   None of the three is a secret — they are ids, not credentials, and they are the same values
-   try-slc carries:
-
-   ```sh
-   gh variable set AZURE_CLIENT_ID_SBOX       --repo hmcts/amp-try-it-now --body 72a7651d-9d2a-4c04-9085-957efeab0e53
-   gh variable set AZURE_SUBSCRIPTION_ID_SBOX --repo hmcts/amp-try-it-now --body bd2864ed-4f3e-45ed-9c6a-8d179674bab1
-   gh variable set AZURE_SUBSCRIPTION_SBOX    --repo hmcts/amp-try-it-now --body DTS-SPS-SBOX
-   ```
-
-   `TFSTATE_STORAGE_ACCOUNT_NONPROD` is an organisation variable and is inherited.
-
-Setting the variables is the easy half and can be done now. The federated credential is the real
-ask: it lives on the deploy app, not in any repository, so it needs PlatOps.
+Without either, a run fails at Azure login before any terraform is evaluated — so that is the
+first thing to check if one ever does.
