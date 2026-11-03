@@ -25,6 +25,13 @@ locals {
     "rcc" = {
       "sps-api-mgmt-sbox" = "/subscriptions/bd2864ed-4f3e-45ed-9c6a-8d179674bab1/resourceGroups/rg-sps-platform-sbox/providers/Microsoft.ApiManagement/service/sps-api-mgmt-sbox/products/try-it-now-cp-refdata-courthearing/groups/administrators"
     }
+
+    # demo only. slc is created here rather than adopted - try-slc never registered in demo - so it
+    # meets the same group APIM attaches on creation that rcc met in sbox. The sbox instance is
+    # absent from this map on purpose: there, slc's groups arrive through adopt_slc_groups below.
+    "slc" = {
+      "sps-api-mgmt-demo" = "/subscriptions/058bf954-ac1f-462b-bca4-42a30314bd74/resourceGroups/rg-sps-platform-demo/providers/Microsoft.ApiManagement/service/sps-api-mgmt-demo/products/try-it-now-cp-crime-schedulingandlisting/groups/administrators"
+    }
   }
 
   administrators_to_import = toset([
