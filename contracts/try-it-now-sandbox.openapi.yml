@@ -41,12 +41,12 @@ servers:
 
 tags:
   - name: discovery
-    description: What this sandbox serves, and how to call it
+    description: What this API serves, and how to call it
 
 paths:
   /scenarios:
     get:
-      summary: What this sandbox serves, and how to call it
+      summary: What this API serves, and how to call it
       description: >-
         Lists every recorded request this sandbox answers, what each one demonstrates, and which
         token realm the deployment runs.
