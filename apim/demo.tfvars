@@ -23,8 +23,6 @@ apim_products = {
   }
 }
 
-# The pod has validated Entra tokens since cnp-flux-config#48796 reconciled, so the gateway can
-# follow it. This way round there is no broken window; the reverse would reject every token.
 entra_tenant_id = "db827888-77df-4707-b3d9-24a3dfe32889"
 
 apis = {
@@ -32,19 +30,10 @@ apis = {
     openapi_spec_path = "../contracts/try-it-now-sandbox.openapi.yml"
     expose_paths      = ["/scenarios"]
     merge_spec_path   = "../contracts/slc-courtschedule.openapi.yml"
-
-    # No name pin, unlike sbox. Nothing is adopted here - try-slc never registered in demo - so the
-    # API is created fresh and derives its name the way rcc does in sandbox.
     display_name = "Try It Now — Crime Scheduling and Listing Court Schedule"
     path         = "amp/try/slc"
-
-    # The /slc suffix is load-bearing: one deployment serves every registered API and the engine
-    # resolves which one from the first path segment. The bare host 404s every operation.
     service_url = "https://amp-try-it-now.demo.platform.hmcts.net/slc"
-
     subscription_required = true
-
-    # amp-api-try-slc in the demo tenant, created by external-entra-id#43.
     entra_audience = "02b04e09-4f7b-4724-963b-a4c10a6825f2"
     required_roles = ["app.read"]
   }
@@ -53,15 +42,10 @@ apis = {
     openapi_spec_path = "../contracts/try-it-now-sandbox.openapi.yml"
     expose_paths      = ["/scenarios"]
     merge_spec_path   = "../contracts/rcc-courthouses.openapi.yml"
-
     display_name = "Try It Now — Refdata Court Hearing Courthouses"
     path         = "amp/try/rcc"
-
     service_url = "https://amp-try-it-now.demo.platform.hmcts.net/rcc"
-
     subscription_required = true
-
-    # amp-api-try-rcc in the demo tenant, created by external-entra-id#43.
     entra_audience = "640c325d-5a0e-48ce-a616-710d0785f2cb"
     required_roles = ["app.read"]
   }
