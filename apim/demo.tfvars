@@ -21,6 +21,16 @@ apim_products = {
     published                     = true
     product_access_control_groups = ["developers", "administrators", "guests"]
   }
+
+  pcd = {
+    name = "try-it-now-cp-crime-prosecution-case-details"
+
+    subscription_required         = true
+    subscriptions_limit           = 20
+    approval_required             = false
+    published                     = true
+    product_access_control_groups = ["developers", "administrators", "guests"]
+  }
 }
 
 entra_tenant_id = "db827888-77df-4707-b3d9-24a3dfe32889"
@@ -48,5 +58,22 @@ apis = {
     subscription_required = true
     entra_audience        = "640c325d-5a0e-48ce-a616-710d0785f2cb"
     required_roles        = ["app.read"]
+  }
+
+  pcd = {
+    openapi_spec_path = "../contracts/try-it-now-sandbox.openapi.yml"
+    expose_paths      = ["/scenarios"]
+    merge_spec_path   = "../contracts/pcd-case-details.openapi.yml"
+
+    display_name = "Try It Now — Crime Prosecution Case Details"
+    path         = "amp/try/pcd"
+
+    service_url = "https://amp-try-it-now.demo.platform.hmcts.net/pcd"
+
+    subscription_required = true
+
+    # amp-api-try-pcd, created by external-entra-id#48.
+    entra_audience = "bb45396e-c703-4afc-b6c9-05aa1fe18dba"
+    required_roles = ["app.read"]
   }
 }

@@ -36,6 +36,16 @@ apim_products = {
     published                     = true
     product_access_control_groups = ["developers", "administrators", "guests"]
   }
+
+  pcd = {
+    name = "try-it-now-cp-crime-prosecution-case-details"
+
+    subscription_required         = true
+    subscriptions_limit           = 20
+    approval_required             = false
+    published                     = true
+    product_access_control_groups = ["developers", "administrators", "guests"]
+  }
 }
 
 # ─── Entra validation ─────────────────────────────────────────────────────────────────────────
@@ -117,6 +127,23 @@ apis = {
     # cnp-flux-config), so a token that works through try-slc's gateway today works through this
     # one, and no consumer has to mint anything differently.
     entra_audience = "c4c8974c-2800-4fe6-964f-dcd4c0820507"
+    required_roles = ["app.read"]
+  }
+
+  pcd = {
+    openapi_spec_path = "../contracts/try-it-now-sandbox.openapi.yml"
+    expose_paths      = ["/scenarios"]
+    merge_spec_path   = "../contracts/pcd-case-details.openapi.yml"
+
+    display_name = "Try It Now — Crime Prosecution Case Details"
+    path         = "amp/try/pcd"
+
+    service_url = "https://amp-try-it-now.sandbox.platform.hmcts.net/pcd"
+
+    subscription_required = true
+
+    # amp-api-try-pcd, created by external-entra-id#48.
+    entra_audience = "00ea2b95-8c57-487c-b878-c68ff591f38d"
     required_roles = ["app.read"]
   }
 }
