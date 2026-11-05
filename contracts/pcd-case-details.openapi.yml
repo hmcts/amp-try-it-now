@@ -1,0 +1,111 @@
+# VENDORED - DO NOT EDIT.
+#
+# Source: hmcts/api-cp-crime-prosecution-case-details
+#         src/main/resources/openapi/openapi-spec.yml
+# Pinned:  v1.0.2
+#
+#   gh api '/repos/hmcts/api-cp-crime-prosecution-case-details/contents/src/main/resources/openapi/openapi-spec.yml?ref=<tag>' \
+#     --jq '.content' | base64 -d > contracts/pcd-case-details.openapi.yml
+openapi: 3.1.0
+servers:
+  - description: Crime Prosecution Case Details API
+    url: https://api-cp-crime-prosecution-case-details.net/{version}
+    variables:
+      version:
+        default: 0.0.0
+        description: API version; matches the spec info.version
+
+info:
+  title: Crime Prosecution Case Details
+  description: |
+    Returns a summary of a criminal prosecution case for a given case reference number.
+
+    Provides the current status of the case, any reporting restrictions in place,
+    defendant details, and associated hearing information. Used by prosecutors,
+    defence solicitors, and court staff who need an up-to-date view of a case as
+    it progresses through the courts.
+  version: 0.0.0
+  contact:
+    email: no-reply@hmcts.com
+  license:
+    name: MIT
+    url: 'https://opensource.org/licenses/MIT'
+
+security:
+  - bearerAuth: [ ]
+
+tags:
+  - name: Case Details
+    description: Case Details API
+paths:
+  /cases/{case_urn}:
+    get:
+      tags:
+        - Case Details
+      description: Retrieve details of a crime prosecution case details by case URN.
+      operationId: getCaseDetailsByCaseUrn
+      parameters:
+        - in: path
+          name: case_urn
+          required: true
+          description: Unique reference number for the case
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description:  Case found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseDetailResponse"
+              examples:
+                Example:
+                  summary: Case Detail
+                  value:
+                    caseStatus: "ACTIVE"
+                    reportingRestrictions: false
+        '400':
+          description: Bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '404':
+          description: Case Not Found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CaseDetailResponse:
+      type: object
+      properties:
+        caseStatus:
+          type: string
+        reportingRestrictions:
+          type: boolean
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Machine-readable error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error context
+        timestamp:
+          type: string
+          format: date-time
+        traceId:
+          type: string
+          description: Unique identifier for error tracing

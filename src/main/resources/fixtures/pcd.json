@@ -1,0 +1,53 @@
+{
+  "apiId": "pcd",
+  "scenarios": [
+    {
+      "operationId": "getCaseDetailsByCaseUrn",
+      "method": "GET",
+      "path": "/cases/TIN-ACTIVE-01",
+      "scenarioId": "active",
+      "status": 200,
+      "summary": "An active case with no reporting restrictions.",
+      "body": {
+        "caseStatus": "ACTIVE",
+        "reportingRestrictions": false
+      }
+    },
+    {
+      "operationId": "getCaseDetailsByCaseUrn",
+      "method": "GET",
+      "path": "/cases/TIN-RESTRICTED-01",
+      "scenarioId": "reporting-restrictions",
+      "status": 200,
+      "summary": "An active case with reporting restrictions in place.",
+      "body": {
+        "caseStatus": "ACTIVE",
+        "reportingRestrictions": true
+      }
+    },
+    {
+      "operationId": "getCaseDetailsByCaseUrn",
+      "method": "GET",
+      "path": "/cases/TIN-NOTFOUND-01",
+      "scenarioId": "not-found",
+      "status": 404,
+      "summary": "No case with this URN.",
+      "body": {
+        "error": "not_found",
+        "message": "No case exists for the supplied case URN."
+      }
+    },
+    {
+      "operationId": "getCaseDetailsByCaseUrn",
+      "method": "GET",
+      "path": "/cases/TIN-BADREQUEST-01",
+      "scenarioId": "bad-request",
+      "status": 400,
+      "summary": "Malformed case URN rejected by the API.",
+      "body": {
+        "error": "invalid_request",
+        "message": "The supplied case URN is not in a recognised format."
+      }
+    }
+  ]
+}

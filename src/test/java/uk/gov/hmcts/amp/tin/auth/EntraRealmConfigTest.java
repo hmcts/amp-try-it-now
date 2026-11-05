@@ -100,7 +100,8 @@ class EntraRealmConfigTest {
         // them from the same file they are declared in would assert nothing.
         final MockEnvironment environment = new MockEnvironment()
                 .withProperty("AUTH_AUDIENCE_SLC", "api://slc-resource-app")
-                .withProperty("AUTH_AUDIENCE_RCC", "api://rcc-resource-app");
+                .withProperty("AUTH_AUDIENCE_RCC", "api://rcc-resource-app")
+                .withProperty("AUTH_AUDIENCE_PCD", "api://pcd-resource-app");
 
         final ApiRegistry registry = TestRegistry.entra(environment);
 
@@ -108,6 +109,8 @@ class EntraRealmConfigTest {
                 .extracting(ApiDefinition::audience).isEqualTo("api://slc-resource-app");
         assertThat(registry.byShortCode("rcc")).get()
                 .extracting(ApiDefinition::audience).isEqualTo("api://rcc-resource-app");
+        assertThat(registry.byShortCode("pcd")).get()
+                .extracting(ApiDefinition::audience).isEqualTo("api://pcd-resource-app");
         // Each API carries its own, which is the whole boundary: the role is app.read on both.
         assertThat(registry.all()).extracting(ApiDefinition::role).containsOnly("app.read");
     }
