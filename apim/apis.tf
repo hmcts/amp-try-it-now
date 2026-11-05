@@ -146,8 +146,7 @@ module "apis" {
   content_format = "openapi"
 }
 
-# The policy carries a validate-jwt block only where entra_tenant_id is set. policies/api-policy.xml
-# explains why it is per-environment, why /scenarios is exempt, and why the throughput keys are
+# Every policy validates Entra tokens. policies/api-policy.xml explains why /scenarios is exempt, and why the throughput keys are
 # per-API rather than per-deployment.
 resource "azurerm_api_management_api_policy" "api_policy" {
   for_each = var.apis

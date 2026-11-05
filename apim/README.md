@@ -47,21 +47,16 @@ every schema in the sandbox contract is prefixed `Sandbox`, which makes a collis
 rather than something to re-verify each time an API is added. `ErrorResponse` is the one that
 would otherwise bite: nearly every `api-cp-*` contract defines it.
 
-## Entra validation is per environment, and must match the pod
+## Entra validation is always on, and the pod must match
 
-`entra_tenant_id` set → every API policy gains `validate-jwt`. Unset → none does.
-
-It has to agree with `auth.key-source` in that environment's flux values. Under `SELF_ISSUED` the
-service signs tokens with its own key and issuer, and an Entra `validate-jwt` in front of it
-rejects every one; under `ENTRA` without it the gateway forwards tokens it never checked.
+`entra_tenant_id` and each API's `entra_audience` are required, and every API policy carries
+`validate-jwt`. The pod must run `auth.key-source` `ENTRA` in that environment's flux values: a
+`SELF_ISSUED` pod's tokens are rejected by the gateway.
 
 `entra_audience` is **per API**, never shared. The role is `app.read` on every sandbox by design,
 so the audience is the entire access boundary between them — a gateway-wide audience would make a
 token minted for one sandbox valid against all of them, which is the hole the per-API resource
 apps exist to close.
-
-`sbox.tfvars` sets both: the sandbox pod has run `ENTRA` since 29 October, and the gateway
-followed it. The ordering that made that safe is recorded in that file.
 
 ## Two applies per environment, the first time
 
