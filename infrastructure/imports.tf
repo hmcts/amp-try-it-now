@@ -17,6 +17,6 @@ locals {
 
 import {
   for_each = local.adopt_amp_identity
-  to       = azurerm_user_assigned_identity.amp
+  to       = azurerm_user_assigned_identity.amp[0]
   id       = local.amp_identity_ids[each.value]
 }
