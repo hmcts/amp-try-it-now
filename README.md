@@ -51,8 +51,8 @@ Validation is real in every environment and the same code runs in both. Only the
 
 | Realm | Who signs | Where |
 | --- | --- | --- |
-| `SELF_ISSUED` | This engine, with its own key | local, preview, AAT staging, AAT, demo |
-| `ENTRA` | Microsoft Entra | sandbox |
+| `SELF_ISSUED` | This engine, with its own key | local, preview, AAT staging, AAT |
+| `ENTRA` | Microsoft Entra | sandbox, demo |
 
 Under `ENTRA` the demo token endpoint and its JWKS are **absent from the application**, not present
 and refusing — the beans behind them are conditional on the self-issued realm.

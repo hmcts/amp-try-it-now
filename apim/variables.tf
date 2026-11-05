@@ -87,15 +87,10 @@ variable "apim_products" {
   }))
 }
 
-# ─── Entra validation (per environment) ───
+# ─── Entra validation ───
 #
-# Set these and every API policy gains a validate-jwt block; leave them unset and none does.
-#
-# They are per-environment because auth.key-source is, and the two must agree. Under SELF_ISSUED
-# the service signs tokens with its own key and carries its own issuer - Microsoft has never heard
-# of them, so an Entra validate-jwt in front of it rejects every token it is handed. Under ENTRA
-# the reverse: without validate-jwt the gateway forwards tokens it never checked, and the only
-# thing standing between a caller and the sandbox is the service. See policies/api-policy.xml.
+# Required in every environment: every API policy validates Entra tokens, and the pod must run
+# auth.key-source ENTRA to match. See policies/api-policy.xml.
 #
 # entra_audience is per-API, because the audience is the access boundary between sandboxes. The
 # roles are deliberately the same name on every API (app.read), so audience is the only thing in
@@ -103,8 +98,7 @@ variable "apim_products" {
 
 variable "entra_tenant_id" {
   type        = string
-  description = "Entra tenant that issues tokens for this environment. Unset disables validate-jwt."
-  default     = null
+  description = "Entra tenant that issues tokens for this environment."
 }
 
 variable "apis" {
@@ -136,10 +130,10 @@ variable "apis" {
     # This API's Entra resource app id: the bare client ID GUID, not api://<guid>. It must equal
     # what the pod validates against - the engine reads it from the variable named by audienceEnv
     # in the registry. If the two drift, a token fails at one layer or the other and the two 401s
-    # look identical from outside. Ignored unless entra_tenant_id is set.
-    entra_audience = optional(string)
+    # look identical from outside.
+    entra_audience = string
 
-    # Roles accepted by the gateway. Ignored unless entra_tenant_id is set. The role check that
+    # Roles accepted by the gateway. The role check that
     # decides an actual request lives in AuthorizationPolicy, not here.
     required_roles = optional(list(string), ["app.read"])
 
@@ -169,9 +163,7 @@ variable "apis" {
   # which APIM accepts and which then matches nothing - so every call 401s with a message about
   # token validation and nothing points at the missing value.
   validation {
-    condition = var.entra_tenant_id == null || alltrue([
-      for api in values(var.apis) : try(length(api.entra_audience) > 0, false)
-    ])
-    error_message = "entra_tenant_id is set, so every API must also set entra_audience."
+    condition     = alltrue([for api in values(var.apis) : length(api.entra_audience) > 0])
+    error_message = "Every API must set entra_audience."
   }
 }
