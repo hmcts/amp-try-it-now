@@ -26,11 +26,27 @@ data "azurerm_user_assigned_identity" "jenkins" {
 # create_managed_identity, which would add a second access policy for this object id on the vault.
 #
 # amp-sandbox-mi, not amp-sbox-mi: no sandbox special case here, unlike jenkins above.
+#
+# Not in prod: service-api-marketplace got there first and created it, so this reads it instead.
 resource "azurerm_user_assigned_identity" "amp" {
+  count               = var.create_managed_identity ? 1 : 0
   name                = "${var.product}-${var.env}-mi"
   resource_group_name = "managed-identities-${var.env}-rg"
   location            = var.location
   tags                = local.tags
+}
+
+data "azurerm_user_assigned_identity" "amp" {
+  count               = var.create_managed_identity ? 0 : 1
+  name                = "${var.product}-${var.env}-mi"
+  resource_group_name = "managed-identities-${var.env}-rg"
+}
+
+# Keeps the environments that already hold this identity from planning a destroy and recreate now
+# the resource is counted.
+moved {
+  from = azurerm_user_assigned_identity.amp
+  to   = azurerm_user_assigned_identity.amp[0]
 }
 
 # Resource group and Key Vault are COMPONENT-scoped, following try-slc.
@@ -57,7 +73,7 @@ module "vault" {
   resource_group_name                  = azurerm_resource_group.rg.name
   product_group_name                   = "DTS API Marketplace"
   common_tags                          = local.tags
-  managed_identity_object_id           = azurerm_user_assigned_identity.amp.principal_id
+  managed_identity_object_id           = var.create_managed_identity ? azurerm_user_assigned_identity.amp[0].principal_id : data.azurerm_user_assigned_identity.amp[0].principal_id
   create_managed_identity              = false
   additional_managed_identities_access = var.additional_managed_identities_access
   jenkins_object_id                    = data.azurerm_user_assigned_identity.jenkins.principal_id

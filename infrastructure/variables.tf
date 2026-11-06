@@ -51,3 +51,9 @@ variable "additional_managed_identities_access" {
   type    = list(string)
   default = []
 }
+
+# This repo creates amp-${env}-mi everywhere it was amp's first component. Prod is the exception:
+# service-api-marketplace created it there, so this reads it instead.
+variable "create_managed_identity" {
+  default = true
+}
