@@ -82,7 +82,9 @@ locals {
       paths = local.combined_paths[api_key]
       components = merge(
         try(local.api_specs[api_key].components, {}),
-        { schemas = local.combined_schemas[api_key], responses = local.combined_responses[api_key] }
+        { schemas = local.combined_schemas[api_key] },
+        # Filtered rather than branched, so APIs without responses keep an identical document.
+        { for section, value in { responses = local.combined_responses[api_key] } : section => value if length(value) > 0 }
       )
     })
   }
