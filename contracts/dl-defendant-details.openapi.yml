@@ -1,0 +1,251 @@
+# VENDORED - DO NOT EDIT.
+#
+# Source: hmcts/api-cp-crime-defendant-details
+#         src/main/resources/openapi/openapi-spec.yml
+# Pinned:  v1.1.0
+#
+#   gh api '/repos/hmcts/api-cp-crime-defendant-details/contents/src/main/resources/openapi/openapi-spec.yml?ref=<tag>' \
+#     --jq '.content' | base64 -d > contracts/dl-defendant-details.openapi.yml
+openapi: 3.1.0
+servers:
+  - description: Crime Defendant Details API
+    url: https://api-cp-crime-defendant-details.net/{version}
+    variables:
+      version:
+        default: 1.0.0
+        description: API version; matches the spec info.version
+
+info:
+  title: Crime Defendant Details API
+  description: Provides read access to defendant details for criminal cases on
+    the Common Platform (CP).
+  version: 1.0.0
+  contact:
+    email: no-reply@hmcts.com
+  license:
+    name: MIT
+    url: 'https://opensource.org/licenses/MIT'
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: defendants
+    description: Defendant details
+
+paths:
+  /defendants/cases/{caseURN}:
+    get:
+      summary: Get defendant details for a case
+      description: >-
+        Returns defendant details (name, date of birth) for
+        defendants on a given case. Optionally narrow the result to a single
+        defendant via defendantId, or resolve across cases and
+        appearances via masterDefendantId. If no defendants match, an empty
+        list is returned.
+      operationId: getDefendantsByCase
+      tags:
+        - defendants
+      parameters:
+        - in: path
+          name: caseURN
+          required: true
+          description: Unique Case URN identifying the case
+          schema:
+            type: string
+          example: "20GD1234567"
+        - in: query
+          name: masterDefendantId
+          required: false
+          description: >-
+            Master defendant identifier used to resolve the defendant details
+            across cases and appearances.
+          schema:
+            type: string
+            format: uuid
+          example: "a1f2e3d4-c5b6-4789-9abc-1d2e3f4a5b6c"
+        - in: query
+          name: defendantId
+          required: false
+          description: Unique identifier of the defendant for this case
+          schema:
+            type: string
+            format: uuid
+          example: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+      responses:
+        '200':
+          description: Defendants found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DefendantDetails"
+              examples:
+                allDefendants:
+                  summary: Every defendant on the case
+                  value:
+                    - defendantId: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+                      masterDefendantId: "a1f2e3d4-c5b6-4789-9abc-1d2e3f4a5b6c"
+                      name: "John Doe"
+                      dateOfBirth: "1980-01-31"
+                    - defendantId: "7c9e6f3a-2b4d-4e8f-9a1c-5d3b8f7e2c6a"
+                      masterDefendantId: "7c9e6f3a-2b4d-4e8f-9a1c-5d3b8f7e2c6a"
+                      name: "Jane Smith"
+                      dateOfBirth: "1992-06-15"
+                byDefendantId:
+                  summary: Narrowed to one defendant with defendantId
+                  value:
+                    - defendantId: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+                      masterDefendantId: "a1f2e3d4-c5b6-4789-9abc-1d2e3f4a5b6c"
+                      name: "John Doe"
+                      dateOfBirth: "1980-01-31"
+                byMasterDefendantId:
+                  summary: Resolved with masterDefendantId, date of birth not known
+                  value:
+                    - defendantId: "7c9e6f3a-2b4d-4e8f-9a1c-5d3b8f7e2c6a"
+                      masterDefendantId: "7c9e6f3a-2b4d-4e8f-9a1c-5d3b8f7e2c6a"
+                      name: "Jane Smith"
+                noMatch:
+                  summary: No defendants match
+                  value: []
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '403':
+          $ref: "#/components/responses/Forbidden"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >-
+        An app-only Microsoft Entra v2 access token from the client credentials
+        flow, carrying the app.read role.
+
+  responses:
+    BadRequest:
+      description: Bad input parameter
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "BAD_REQUEST"
+            message: "The supplied defendantId is not a valid UUID"
+            details:
+              parameter: "defendantId"
+            timestamp: "2026-07-06T11:33:22.794Z"
+            traceId: "b2f1c3d4e5f60718"
+    Unauthorized:
+      description: Authentication is missing or the access token is invalid
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "UNAUTHORIZED"
+            message: "Access token is missing or invalid"
+            timestamp: "2026-07-06T11:33:22.794Z"
+            traceId: "c3a2b4d5e6f70819"
+    Forbidden:
+      description: The access token does not carry the required app.read role
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "FORBIDDEN"
+            message: "The access token does not carry the required role app.read"
+            timestamp: "2026-07-06T11:33:22.794Z"
+            traceId: "d4b3c5e6f708192a"
+    NotFound:
+      description: The requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "NOT_FOUND"
+            message: "No case found for the supplied case URN"
+            details:
+              caseURN: "20GD1234567"
+            timestamp: "2026-07-06T11:33:22.794Z"
+            traceId: "e5c4d6f708192a3b"
+    InternalServerError:
+      description: An unexpected error occurred
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "INTERNAL_SERVER_ERROR"
+            message: "An unexpected error occurred while processing the request"
+            timestamp: "2026-07-06T11:33:22.794Z"
+            traceId: "f6d5e708192a3b4c"
+
+  schemas:
+    DefendantDetails:
+      description: Defendant details for a case
+      type: object
+      required:
+        - defendantId
+        - masterDefendantId
+        - name
+      properties:
+        defendantId:
+          description: Unique identifier of the defendant for this case
+          type: string
+          format: uuid
+          example: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+        masterDefendantId:
+          description: >-
+            Master defendant identifier used to resolve the defendant details
+            across cases and appearances.
+          type: string
+          format: uuid
+          example: "a1f2e3d4-c5b6-4789-9abc-1d2e3f4a5b6c"
+        name:
+          description: Full name of the defendant
+          type: string
+          example: "John Doe"
+        dateOfBirth:
+          description: >-
+            Date of birth of the defendant. Optional — omitted from the
+            response when not known.
+          type: string
+          format: date
+          example: "1980-01-31"
+          x-field-extra-annotation: "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)"
+
+    ErrorResponse:
+      description: Standard error response
+      type: object
+      properties:
+        error:
+          type: string
+          description: Machine-readable error code
+          example: "NOT_FOUND"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "No case found for the supplied case URN"
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error context
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-07-06T11:33:22.794Z"
+        traceId:
+          type: string
+          description: Unique identifier for error tracing
+          example: "b2f1c3d4e5f60718"

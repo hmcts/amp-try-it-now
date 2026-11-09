@@ -1,0 +1,101 @@
+{
+  "apiId": "dl",
+  "scenarios": [
+    {
+      "operationId": "getDefendantsByCase",
+      "method": "GET",
+      "path": "/defendants/cases/TIN-ACTIVE-01",
+      "scenarioId": "all-defendants",
+      "status": 200,
+      "summary": "Every defendant on the case.",
+      "body": [
+        {
+          "defendantId": "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95",
+          "masterDefendantId": "a1f2e3d4-c5b6-4789-9abc-1d2e3f4a5b6c",
+          "name": "John Doe",
+          "dateOfBirth": "1980-01-31"
+        },
+        {
+          "defendantId": "7c9e6f3a-2b4d-4e8f-9a1c-5d3b8f7e2c6a",
+          "masterDefendantId": "7c9e6f3a-2b4d-4e8f-9a1c-5d3b8f7e2c6a",
+          "name": "Jane Smith",
+          "dateOfBirth": "1992-06-15"
+        }
+      ]
+    },
+    {
+      "operationId": "getDefendantsByCase",
+      "method": "GET",
+      "path": "/defendants/cases/TIN-ACTIVE-01?defendantId=30b83084-d2fe-4a70-bbd1-fae1dfdb4b95",
+      "scenarioId": "by-defendant-id",
+      "status": 200,
+      "summary": "Narrowed to one defendant with defendantId.",
+      "body": [
+        {
+          "defendantId": "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95",
+          "masterDefendantId": "a1f2e3d4-c5b6-4789-9abc-1d2e3f4a5b6c",
+          "name": "John Doe",
+          "dateOfBirth": "1980-01-31"
+        }
+      ]
+    },
+    {
+      "operationId": "getDefendantsByCase",
+      "method": "GET",
+      "path": "/defendants/cases/TIN-ACTIVE-01?masterDefendantId=7c9e6f3a-2b4d-4e8f-9a1c-5d3b8f7e2c6a",
+      "scenarioId": "by-master-defendant-id",
+      "status": 200,
+      "summary": "Resolved with masterDefendantId; date of birth not known.",
+      "body": [
+        {
+          "defendantId": "7c9e6f3a-2b4d-4e8f-9a1c-5d3b8f7e2c6a",
+          "masterDefendantId": "7c9e6f3a-2b4d-4e8f-9a1c-5d3b8f7e2c6a",
+          "name": "Jane Smith"
+        }
+      ]
+    },
+    {
+      "operationId": "getDefendantsByCase",
+      "method": "GET",
+      "path": "/defendants/cases/TIN-NOMATCH-01",
+      "scenarioId": "no-match",
+      "status": 200,
+      "summary": "A case with no matching defendants.",
+      "body": []
+    },
+    {
+      "operationId": "getDefendantsByCase",
+      "method": "GET",
+      "path": "/defendants/cases/TIN-NOTFOUND-01",
+      "scenarioId": "not-found",
+      "status": 404,
+      "summary": "No case with this URN.",
+      "body": {
+        "error": "NOT_FOUND",
+        "message": "No case found for the supplied case URN",
+        "details": {
+          "caseURN": "TIN-NOTFOUND-01"
+        },
+        "timestamp": "2026-07-06T11:33:22.794Z",
+        "traceId": "e5c4d6f708192a3b"
+      }
+    },
+    {
+      "operationId": "getDefendantsByCase",
+      "method": "GET",
+      "path": "/defendants/cases/TIN-ACTIVE-01?defendantId=not-a-uuid",
+      "scenarioId": "bad-request",
+      "status": 400,
+      "summary": "defendantId that is not a UUID, rejected by the API.",
+      "body": {
+        "error": "BAD_REQUEST",
+        "message": "The supplied defendantId is not a valid UUID",
+        "details": {
+          "parameter": "defendantId"
+        },
+        "timestamp": "2026-07-06T11:33:22.794Z",
+        "traceId": "b2f1c3d4e5f60718"
+      }
+    }
+  ]
+}

@@ -31,6 +31,16 @@ apim_products = {
     published                     = true
     product_access_control_groups = ["developers", "administrators", "guests"]
   }
+
+  dl = {
+    name = "try-it-now-cp-crime-defendant-details"
+
+    subscription_required         = true
+    subscriptions_limit           = 20
+    approval_required             = false
+    published                     = true
+    product_access_control_groups = ["developers", "administrators", "guests"]
+  }
 }
 
 entra_tenant_id = "db827888-77df-4707-b3d9-24a3dfe32889"
@@ -74,6 +84,23 @@ apis = {
 
     # amp-api-try-pcd, created by external-entra-id#48.
     entra_audience = "bb45396e-c703-4afc-b6c9-05aa1fe18dba"
+    required_roles = ["app.read"]
+  }
+
+  dl = {
+    openapi_spec_path = "../contracts/try-it-now-sandbox.openapi.yml"
+    expose_paths      = ["/scenarios"]
+    merge_spec_path   = "../contracts/dl-defendant-details.openapi.yml"
+
+    display_name = "Try It Now — Crime Defendant Details"
+    path         = "amp/try/dl"
+
+    service_url = "https://amp-try-it-now.demo.platform.hmcts.net/dl"
+
+    subscription_required = true
+
+    # amp-api-try-dl, created by external-entra-id#52.
+    entra_audience = "f78066dd-0406-465b-9d9e-6073f5f8925b"
     required_roles = ["app.read"]
   }
 }

@@ -46,3 +46,14 @@ apis:
       - id: getCaseDetailsByCaseUrn
         method: GET
         path: /cases/{case_urn}
+
+  - shortCode: dl
+    title: Crime Defendant Details
+    catalogueName: api-cp-crime-defendant-details
+    productId: cp-crime-defendant-details
+    role: app.read
+    audienceEnv: AUTH_AUDIENCE_DL
+    operations:
+      - id: getDefendantsByCase
+        method: GET
+        path: /defendants/cases/{caseURN}
