@@ -63,6 +63,16 @@ locals {
 
   http_methods = ["get", "put", "post", "delete", "patch", "head", "options"]
 
+  # Shared error responses, which dl's contract references by $ref. The sandbox contract defines
+  # none, so the merge cannot collide; without them APIM rejects the import as invalid.
+  combined_responses = {
+    for api_key, api in var.apis :
+    api_key => merge(
+      try(local.api_specs[api_key].components.responses, {}),
+      try(local.merge_specs[api_key].components.responses, {})
+    )
+  }
+
   # info and servers come from the sandbox contract. APIM overrides the backend with service_url
   # anyway, so the demonstrated spec's templated server block is deliberately dropped - it names
   # a host that does not exist and a {version} variable nothing here substitutes.
@@ -72,7 +82,9 @@ locals {
       paths = local.combined_paths[api_key]
       components = merge(
         try(local.api_specs[api_key].components, {}),
-        { schemas = local.combined_schemas[api_key] }
+        { schemas = local.combined_schemas[api_key] },
+        # Filtered rather than branched, so APIs without responses keep an identical document.
+        { for section, value in { responses = local.combined_responses[api_key] } : section => value if length(value) > 0 }
       )
     })
   }
