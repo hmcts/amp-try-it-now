@@ -70,14 +70,17 @@ fails at **plan**, so it cannot be written ahead of time. Apply, add the entry t
 
 `slc`'s product and API were registered by try-slc and carry **19 live subscriptions**. Keys
 belong to a product, so recreating it would invalidate every one of them. `imports.tf` therefore
-brings the existing product, its three groups, the API, the product link and the policy into this
-state, and the only thing that changes in Azure is `service_url`.
+brings the existing product and its three groups into this state.
 
 Two consequences worth knowing before editing the `slc` entries:
 
-* **The API is called `try-it-now---public-api`**, a name try-slc derived from its spec title. It
-  is pinned explicitly in the tfvars. Let it derive the way `rcc` does and Terraform plans a second
-  API on the same `amp/try/slc` path instead of adopting this one.
+* **The API was renamed to `try-it-now-slc`.** try-slc registered it as `try-it-now---public-api`,
+  derived from its spec title, and it was first adopted under that name. It now derives
+  `try-it-now-slc` like every other API, so the Marketplace's developer portal link
+  (`/api-details#api=try-it-now-<short code>`) is the same shape for all of them. APIM can only
+  rename an API by recreating it, so that apply replaced the API, its product link and its policy,
+  and `amp/try/slc` answered 404 for the minutes in between. The product, its groups and its
+  subscriptions were not touched.
 * **try-slc must release it first.** Its `apim/` configuration drops the product and API with
   `removed` blocks, which take them out of its state without destroying them. Adopting before that
   lands leaves two states believing they own the same resources.

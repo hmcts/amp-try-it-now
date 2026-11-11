@@ -89,10 +89,10 @@ locals {
   adopt_slc        = local.slc_apim_scope == null ? toset([]) : toset(["slc"])
   adopt_slc_groups = local.slc_apim_scope == null ? toset([]) : toset(["administrators", "developers", "guests"])
 
-  # try-slc's names, which the tfvars repeats. Spelled once here so a typo cannot make the import
-  # and the configuration disagree - that failure mode plans as a create-and-destroy, not an error.
+  # try-slc's product id, which the tfvars repeats. Spelled once here so a typo cannot make the
+  # import and the configuration disagree - that failure mode plans as a create-and-destroy, not an
+  # error.
   slc_product_id = "try-it-now-cp-crime-schedulingandlisting"
-  slc_api_name   = "try-it-now---public-api"
 }
 
 import {
@@ -109,26 +109,7 @@ import {
   id       = "${local.slc_apim_scope}/products/${local.slc_product_id}/groups/${each.value}"
 }
 
-# The revision suffix is part of the resource id for an API, and only revision 1 has ever existed
-# here.
-import {
-  for_each = local.adopt_slc
-  to       = module.apis[each.value].azurerm_api_management_api.api
-  id       = "${local.slc_apim_scope}/apis/${local.slc_api_name};rev=1"
-}
-
-# The product-to-API association is its own resource, and the module creates it under a count, so
-# the address carries the [0].
-import {
-  for_each = local.adopt_slc
-  to       = module.apis[each.value].azurerm_api_management_product_api.link_to_product[0]
-  id       = "${local.slc_apim_scope}/products/${local.slc_product_id}/apis/${local.slc_api_name}"
-}
-
-# A policy's id is the API's id, with no /policies/policy suffix - that is what the provider
-# documents, and the obvious guess does not work.
-import {
-  for_each = local.adopt_slc
-  to       = azurerm_api_management_api_policy.api_policy[each.value]
-  id       = "${local.slc_apim_scope}/apis/${local.slc_api_name}"
-}
+# The API, its product link and its policy were adopted here too, under try-slc's API name
+# try-it-now---public-api. They are no longer imported: the API is now named try-it-now-slc like
+# every other one, which APIM can only do by recreating it, so those three are replaced rather
+# than adopted. The product and its groups above are untouched, and with them the subscriptions.
