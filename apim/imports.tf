@@ -108,8 +108,3 @@ import {
   to       = module.product["slc"].azurerm_api_management_product_group.access_control_groups[each.value]
   id       = "${local.slc_apim_scope}/products/${local.slc_product_id}/groups/${each.value}"
 }
-
-# The API, its product link and its policy were adopted here too, under try-slc's API name
-# try-it-now---public-api. They are no longer imported: the API is now named try-it-now-slc like
-# every other one, which APIM can only do by recreating it, so those three are replaced rather
-# than adopted. The product and its groups above are untouched, and with them the subscriptions.
