@@ -22,4 +22,9 @@ properties([
     ])
 ])
 
-withParameterizedPipeline('java', 'amp', 'try-it-now', params.ENVIRONMENT, 'sandbox') {}
+withParameterizedPipeline('java', 'amp', 'try-it-now', params.ENVIRONMENT, 'sandbox') {
+  // AMP sandbox is a long-lived environment, so keep its infrastructure out of the sandbox cleardown.
+  // The expiresAfter tag is only applied in sandbox.
+  // https://hmcts.github.io/cloud-native-platform/standards/environments/sandbox-cleardown.html
+  expires("3000-01-01")
+}
