@@ -23,8 +23,8 @@ apim_products = {
   # ADOPTED FROM try-slc, NOT CREATED HERE.
   #
   # Every value below describes the product that already exists in sbox and carries 19 live
-  # subscriptions. The name is try-slc's verbatim, and imports.tf brings the product, its three
-  # groups, the API and the policy into this state. Change any of these and Terraform reconciles
+  # subscriptions. The name is try-slc's verbatim, and imports.tf brings the product and its three
+  # groups into this state. Change any of these and Terraform reconciles
   # a product consumers hold keys to - subscriptions_limit, approval_required and the group list
   # are therefore the live settings, not this repository's preferences.
   slc = {
@@ -107,22 +107,16 @@ apis = {
     required_roles = ["app.read"]
   }
 
-  # ADOPTED FROM try-slc. See imports.tf.
-  #
-  # The one line that changes behaviour is service_url: the gateway path, the subscription keys
-  # and the audience all stay exactly as they are, and traffic moves from try-slc's deployment to
-  # this one. Reverting that single line puts it back.
+  # Its product was adopted from try-slc (see imports.tf). The API was too, as
+  # try-it-now---public-api - a name try-slc derived from its spec title. It now derives
+  # try-it-now-slc like the others, so the Marketplace links every API's developer portal page the
+  # same way. The name is the resource id, so that recreates the API, its product link and its
+  # policy; the product and its keys survive, and consumers see the same path and display name.
   slc = {
     openapi_spec_path = "../contracts/try-it-now-sandbox.openapi.yml"
     expose_paths      = ["/scenarios"]
     merge_spec_path   = "../contracts/slc-courtschedule.openapi.yml"
 
-    # try-slc derived this name from its spec title, which is how APIM came to hold an API called
-    # try-it-now---public-api. It is kept verbatim because the name is the resource id: derive it
-    # the way rcc does and Terraform would create a SECOND API on the same amp/try/slc path rather
-    # than adopt this one. It is internal - a consumer sees the path and the display name - and
-    # renaming it later is a deliberate recreate, which the product and its keys would survive.
-    name         = "try-it-now---public-api"
     display_name = "Try It Now — Crime Scheduling and Listing Court Schedule"
     path         = "amp/try/slc"
 
