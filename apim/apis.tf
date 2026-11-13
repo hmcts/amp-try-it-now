@@ -103,11 +103,7 @@ locals {
   # Filtering the header list instead keeps one code path - with the flag off the comprehension
   # yields [], concat is a no-op, and the document is unchanged.
   #
-  # info.title is set to the API's display name. Every API takes info from the shared sandbox
-  # contract, so without this all of them import with the same title. APIM applies the title as
-  # the display name during an import and display names must be unique, so when more than one
-  # API re-imports in the same apply, all but the first fail with "API with specified name
-  # 'Try It Now — sandbox discovery' already exists".
+  # Unique info.title per API: APIM rejects concurrent imports that share a title.
   import_specs = {
     for api_key, api in var.apis :
     api_key => yamlencode(merge(local.combined_specs[api_key], {
