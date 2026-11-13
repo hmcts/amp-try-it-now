@@ -22,4 +22,6 @@ properties([
     ])
 ])
 
-withParameterizedPipeline('java', 'amp', 'try-it-now', params.ENVIRONMENT, 'sandbox') {}
+withParameterizedPipeline('java', 'amp', 'try-it-now', params.ENVIRONMENT, 'sandbox') {
+  expires("2099-12-31")
+}
