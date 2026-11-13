@@ -131,8 +131,9 @@ apis = {
     # amp-api-try-slc, unchanged. The pod already validates against it (AUTH_AUDIENCE_SLC in
     # cnp-flux-config), so a token that works through try-slc's gateway today works through this
     # one, and no consumer has to mint anything differently.
-    entra_audience = "c4c8974c-2800-4fe6-964f-dcd4c0820507"
-    required_roles = ["app.read"]
+    entra_audience      = "c4c8974c-2800-4fe6-964f-dcd4c0820507"
+    required_roles      = ["app.read"]
+    try_it_auth_headers = true
   }
 
   pcd = {
@@ -148,8 +149,9 @@ apis = {
     subscription_required = true
 
     # amp-api-try-pcd, created by external-entra-id#48.
-    entra_audience = "00ea2b95-8c57-487c-b878-c68ff591f38d"
-    required_roles = ["app.read"]
+    entra_audience      = "00ea2b95-8c57-487c-b878-c68ff591f38d"
+    required_roles      = ["app.read"]
+    try_it_auth_headers = true
   }
 
   dl = {
@@ -165,7 +167,8 @@ apis = {
     subscription_required = true
 
     # amp-api-try-dl, created by external-entra-id#52.
-    entra_audience = "b8faaf57-466a-4d5d-8a4b-33114575d4e5"
-    required_roles = ["app.read"]
+    entra_audience      = "b8faaf57-466a-4d5d-8a4b-33114575d4e5"
+    required_roles      = ["app.read"]
+    try_it_auth_headers = true
   }
 }
