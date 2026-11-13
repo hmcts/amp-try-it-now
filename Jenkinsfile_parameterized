@@ -23,5 +23,5 @@ properties([
 ])
 
 withParameterizedPipeline('java', 'amp', 'try-it-now', params.ENVIRONMENT, 'sandbox') {
-  expires("3000-01-01")
+  expires("2099-12-31")
 }
