@@ -127,8 +127,8 @@ dependencies {
   implementation 'org.owasp.encoder:encoder:1.6.0'
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
 
-  compileOnly 'org.projectlombok:lombok:1.18.46'
-  annotationProcessor 'org.projectlombok:lombok:1.18.46'
+  compileOnly 'org.projectlombok:lombok:1.18.48'
+  annotationProcessor 'org.projectlombok:lombok:1.18.48'
 
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testImplementation 'org.springframework.boot:spring-boot-testcontainers'
