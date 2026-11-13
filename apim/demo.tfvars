@@ -56,6 +56,7 @@ apis = {
     subscription_required = true
     entra_audience        = "02b04e09-4f7b-4724-963b-a4c10a6825f2"
     required_roles        = ["app.read"]
+    try_it_auth_headers   = true
   }
 
   rcc = {
@@ -84,8 +85,9 @@ apis = {
     subscription_required = true
 
     # amp-api-try-pcd, created by external-entra-id#48.
-    entra_audience = "bb45396e-c703-4afc-b6c9-05aa1fe18dba"
-    required_roles = ["app.read"]
+    entra_audience      = "bb45396e-c703-4afc-b6c9-05aa1fe18dba"
+    required_roles      = ["app.read"]
+    try_it_auth_headers = true
   }
 
   dl = {
@@ -101,7 +103,8 @@ apis = {
     subscription_required = true
 
     # amp-api-try-dl, created by external-entra-id#52.
-    entra_audience = "f78066dd-0406-465b-9d9e-6073f5f8925b"
-    required_roles = ["app.read"]
+    entra_audience      = "f78066dd-0406-465b-9d9e-6073f5f8925b"
+    required_roles      = ["app.read"]
+    try_it_auth_headers = true
   }
 }

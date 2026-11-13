@@ -63,6 +63,15 @@ locals {
 
   http_methods = ["get", "put", "post", "delete", "patch", "head", "options"]
 
+  display_names = {
+    for api_key, api in var.apis :
+    api_key => coalesce(
+      try(api.display_name, null),
+      try(local.api_specs[api_key].info.title, null),
+      api_key
+    )
+  }
+
   # Shared error responses, which dl's contract references by $ref. The sandbox contract defines
   # none, so the merge cannot collide; without them APIM rejects the import as invalid.
   combined_responses = {
@@ -93,9 +102,12 @@ locals {
   # trap as above: the two sides are objects of different shape and HCL refuses to unify them.
   # Filtering the header list instead keeps one code path - with the flag off the comprehension
   # yields [], concat is a no-op, and the document is unchanged.
+  #
+  # Unique info.title per API: APIM rejects concurrent imports that share a title.
   import_specs = {
     for api_key, api in var.apis :
     api_key => yamlencode(merge(local.combined_specs[api_key], {
+      info = merge(local.combined_specs[api_key].info, { title = local.display_names[api_key] })
       paths = {
         for path, item in local.combined_paths[api_key] : path => merge(
           { for key, value in item : key => value if !contains(local.http_methods, key) },
@@ -126,11 +138,7 @@ module "apis" {
 
   revision = each.value.revision
 
-  display_name = coalesce(
-    try(each.value.display_name, null),
-    try(local.api_specs[each.key].info.title, null),
-    each.key
-  )
+  display_name = local.display_names[each.key]
 
   # Derived from the short code, NOT from a spec title.
   #
