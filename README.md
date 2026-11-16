@@ -57,7 +57,7 @@ Validation is real in every environment and the same code runs in both. Only the
 Under `ENTRA` the demo token endpoint and its JWKS are **absent from the application**, not present
 and refusing — the beans behind them are conditional on the self-issued realm.
 
-**Demo is the last environment.** There is no production deployment and there must not be one.
+**Production.** The APIM registration (`apim/prod.tfvars`) is applied after sbox and demo on every merge to master. The prod pod must run `ENTRA` before the gateway will accept its tokens.
 
 ## Running it locally
 

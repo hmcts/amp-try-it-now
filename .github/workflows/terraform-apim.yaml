@@ -9,7 +9,8 @@
 #     two configurations with two backends and two variable sets.
 #   * it watches both contracts, because both are inputs to the import: the sandbox contract and
 #     the vendored copy of the demonstrated API's spec.
-#   * no prod job, and there is not going to be one. Demo is the last environment for Try It Now.
+#   * prod is its own job, after every non-prod environment has applied. On a merge to master the
+#     order is sbox + demo (parallel), then prod. A pull request only plans all three.
 #
 # PREREQUISITE, AND IT IS NOT IN THIS REPO. The deploy job authenticates to Azure by OIDC, using
 # a federated credential scoped to `repo:hmcts/<name>`. hmcts/amp-try-it-now is a new repository,
@@ -75,6 +76,7 @@ jobs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       has_envs: ${{ steps.matrix.outputs.has_envs }}
       apply_aat: ${{ steps.matrix.outputs.apply_aat }}
+      has_prod: ${{ steps.matrix.outputs.has_prod }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -93,6 +95,7 @@ jobs:
           matrix='[]'
           found="false"
           apply_aat="false"
+          has_prod="false"
 
           for file in apim/*.tfvars; do
             if [ ! -f "$file" ]; then
@@ -103,11 +106,11 @@ jobs:
             env_name="${env_name#apim/}"
             env_upper="$(echo "$env_name" | tr '[:lower:]-' '[:upper:]_')"
 
-            # There is no prod environment for Try It Now and there must not be one. A prod.tfvars
-            # would otherwise be picked up here and applied with no approval gate at all.
+            # prod is deployed by its own job (terraform-prod below), which waits for every
+            # environment in this matrix. Keeping it out of the matrix is what gives that order.
             if [ "$env_name" = "prod" ]; then
-              echo "::error::apim/prod.tfvars exists. Try It Now stops at demo - there is no production deployment." >&2
-              exit 1
+              has_prod="true"
+              continue
             fi
 
             # On apply, gated environments are deployed by their own approval-gated job.
@@ -137,6 +140,7 @@ jobs:
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
           echo "has_envs=$found" >> "$GITHUB_OUTPUT"
           echo "apply_aat=$apply_aat" >> "$GITHUB_OUTPUT"
+          echo "has_prod=$has_prod" >> "$GITHUB_OUTPUT"
 
   terraform:
     permissions:
@@ -207,5 +211,41 @@ jobs:
       state-store-use-entra-id-auth: true
       working-directory: apim
       plan-only: false
+      product: amp
+      post-plan-to-pr: true
+
+  # ── Production ─────────────────────────────────────────────────────────────
+  # Runs only when every non-prod environment succeeded, so a bad change stops at sbox or demo.
+  # On a pull request it is plan-only, like the others. There is no approval gate: a merge to
+  # master applies to prod. Reviewers on a `prod` GitHub environment would need a gate job like
+  # approve-aat above, because the environment must not be set on the Azure login job itself.
+  terraform-prod:
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    name: Terraform prod
+    needs: [ discover-environments, terraform ]
+    if: ${{ !cancelled() &&
+      needs['discover-environments'].outputs.has_prod == 'true' &&
+      needs.terraform.result == 'success' && (
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.overrideAction == 'plan' || github.ref ==
+      'refs/heads/master' ) }}
+    uses: hmcts/cnp-githubactions-library/.github/workflows/terraform-deploy-openId.yaml@main
+    with:
+      environment: prod
+      subscription: ${{ vars.AZURE_SUBSCRIPTION_PROD }}
+      aks-subscription: ${{ vars.AZURE_SUBSCRIPTION_PROD }}
+      storage-account: ${{ vars.TFSTATE_STORAGE_ACCOUNT_PROD }}
+      azure-client-id: ${{ vars.AZURE_CLIENT_ID_PROD }}
+      azure-subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID_PROD }}
+      state-store-resource-group: rg-sps-platform-prod
+      state-store-account-name: spsapimapiprodstate
+      state-store-container-name: terraform-state
+      state-store-use-entra-id-auth: true
+      working-directory: apim
+      plan-only: ${{ github.event_name == 'pull_request' || (github.event_name ==
+        'workflow_dispatch' && github.event.inputs.overrideAction == 'plan') }}
       product: amp
       post-plan-to-pr: true
