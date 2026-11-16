@@ -83,9 +83,9 @@ apis = {
     service_url = "https://amp-try-it-now.platform.hmcts.net/pcd"
 
     subscription_required = true
-    entra_audience      = "d9478881-b17f-40ef-a1b3-57728323430c"
-    required_roles      = ["app.read"]
-    try_it_auth_headers = true
+    entra_audience        = "d9478881-b17f-40ef-a1b3-57728323430c"
+    required_roles        = ["app.read"]
+    try_it_auth_headers   = true
   }
 
   dl = {
@@ -99,8 +99,8 @@ apis = {
     service_url = "https://amp-try-it-now.platform.hmcts.net/dl"
 
     subscription_required = true
-    entra_audience      = "7bffe402-e979-443e-8703-7b5a4e90d5c0"
-    required_roles      = ["app.read"]
-    try_it_auth_headers = true
+    entra_audience        = "7bffe402-e979-443e-8703-7b5a4e90d5c0"
+    required_roles        = ["app.read"]
+    try_it_auth_headers   = true
   }
 }
