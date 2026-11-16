@@ -1,0 +1,38 @@
+<!--
+  Product policy for a sandbox product attached to a real producer API.
+
+  Runs at the producer API policy's <base/>, after that policy has skipped its own token check for
+  this product. Validates the sandbox token, then sends the call to the sandbox engine, never the
+  producer backend.
+-->
+<policies>
+    <inbound>
+        <base />
+        <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Sandbox token failed validation.">
+            <openid-config url="https://login.microsoftonline.com/${entra_tenant_id}/v2.0/.well-known/openid-configuration" />
+            <audiences>
+                <audience>${entra_audience}</audience>
+            </audiences>
+            <issuers>
+                <issuer>https://login.microsoftonline.com/${entra_tenant_id}/v2.0</issuer>
+            </issuers>
+            <required-claims>
+                <claim name="roles" match="any">
+%{ for role in required_roles ~}
+                    <value>${role}</value>
+%{ endfor ~}
+                </claim>
+            </required-claims>
+        </validate-jwt>
+        <set-backend-service base-url="${backend_url}" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>

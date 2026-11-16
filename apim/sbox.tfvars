@@ -172,3 +172,15 @@ apis = {
     try_it_auth_headers = true
   }
 }
+
+# Sandbox as a product on the real slc API. Unpublished: test with an admin-created subscription.
+sandbox_products = {
+  slc = {
+    product_id     = "cp-crime-schedulingandlisting-sandbox"
+    display_name   = "Crime Scheduling and Listing Court Schedule - Sandbox"
+    real_api_name  = "common-platform-api-scheduling-and-listing-court-schedule"
+    backend_url    = "https://amp-try-it-now.sandbox.platform.hmcts.net/slc"
+    entra_audience = "c4c8974c-2800-4fe6-964f-dcd4c0820507"
+    required_roles = ["app.read"]
+  }
+}
