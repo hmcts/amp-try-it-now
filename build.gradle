@@ -125,7 +125,7 @@ dependencies {
 
   implementation 'io.micrometer:micrometer-registry-prometheus'
   implementation 'org.owasp.encoder:encoder:1.6.0'
-  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
+  implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
 
   compileOnly 'org.projectlombok:lombok:1.18.46'
   annotationProcessor 'org.projectlombok:lombok:1.18.46'

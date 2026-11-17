@@ -30,6 +30,9 @@
 -->
 <policies>
     <inbound>
+        <set-header name="X-Correlation-Id" exists-action="skip">
+            <value>@(context.RequestId.ToString())</value>
+        </set-header>
         <choose>
             <when condition="@(context.Operation.UrlTemplate == &quot;/scenarios&quot;)" />
             <when condition="@(context.Request.Headers.ContainsKey(&quot;Authorization&quot;))">
