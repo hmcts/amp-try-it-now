@@ -8,7 +8,6 @@ java:
   aadIdentityName: amp
   environment:
     APPLICATIONINSIGHTS_ENABLED: "false"
-    APPLICATIONINSIGHTS_CONNECTION_STRING: "InstrumentationKey=00000000-0000-0000-0000-000000000000"
     # Restated rather than inherited. SELF_ISSUED is also application.yaml's default, so this line
     # changes nothing today - it is here so preview and the AAT staging slot say out loud which
     # realm they rehearse, and a future change to the default cannot move them silently.
