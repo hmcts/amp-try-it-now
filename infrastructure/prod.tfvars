@@ -4,3 +4,6 @@ aks_subscription_id = "8cbc6f36-7c56-4963-9d36-739db5d00b27"
 
 # amp-prod-mi is created by service-api-marketplace, so this repo reads it.
 create_managed_identity = false
+
+log_analytics_retention_days = 90
+log_analytics_daily_quota_gb = 5
