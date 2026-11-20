@@ -9,7 +9,7 @@ plugins {
   // does not exist and the build fails with "Task 'sonarqube' not found in root project", after
   // the image has already been pushed - so it reads as a late failure rather than a missing
   // plugin. Version pinned to try-slc's.
-  id 'org.sonarqube' version '7.5.0.8588'
+  id 'org.sonarqube' version '7.6.0.18749'
 }
 
 // Sonar reads the XML report and nothing else; without this it logs "JaCoCo report task detected,
