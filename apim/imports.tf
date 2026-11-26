@@ -23,6 +23,7 @@
 locals {
   administrators_product_group_ids = {
     "rcc" = {
+      "sps-api-mgmt-aat"  = "/subscriptions/70bea6e3-384f-4cf4-b551-743a78d716cd/resourceGroups/rg-sps-platform-aat/providers/Microsoft.ApiManagement/service/sps-api-mgmt-aat/products/try-it-now-cp-refdata-courthearing/groups/administrators"
       "sps-api-mgmt-sbox" = "/subscriptions/bd2864ed-4f3e-45ed-9c6a-8d179674bab1/resourceGroups/rg-sps-platform-sbox/providers/Microsoft.ApiManagement/service/sps-api-mgmt-sbox/products/try-it-now-cp-refdata-courthearing/groups/administrators"
       "sps-api-mgmt-demo" = "/subscriptions/058bf954-ac1f-462b-bca4-42a30314bd74/resourceGroups/rg-sps-platform-demo/providers/Microsoft.ApiManagement/service/sps-api-mgmt-demo/products/try-it-now-cp-refdata-courthearing/groups/administrators"
       "sps-api-mgmt-prod" = "/subscriptions/890625e2-7a8b-445c-81b4-8044a062cef3/resourceGroups/rg-sps-platform-prod/providers/Microsoft.ApiManagement/service/sps-api-mgmt-prod/products/try-it-now-cp-refdata-courthearing/groups/administrators"
@@ -32,17 +33,20 @@ locals {
     # meets the same group APIM attaches on creation that rcc met in sbox. The sbox instance is
     # absent from this map on purpose: there, slc's groups arrive through adopt_slc_groups below.
     "slc" = {
+      "sps-api-mgmt-aat"  = "/subscriptions/70bea6e3-384f-4cf4-b551-743a78d716cd/resourceGroups/rg-sps-platform-aat/providers/Microsoft.ApiManagement/service/sps-api-mgmt-aat/products/try-it-now-cp-crime-schedulingandlisting/groups/administrators"
       "sps-api-mgmt-demo" = "/subscriptions/058bf954-ac1f-462b-bca4-42a30314bd74/resourceGroups/rg-sps-platform-demo/providers/Microsoft.ApiManagement/service/sps-api-mgmt-demo/products/try-it-now-cp-crime-schedulingandlisting/groups/administrators"
       "sps-api-mgmt-prod" = "/subscriptions/890625e2-7a8b-445c-81b4-8044a062cef3/resourceGroups/rg-sps-platform-prod/providers/Microsoft.ApiManagement/service/sps-api-mgmt-prod/products/try-it-now-cp-crime-schedulingandlisting/groups/administrators"
     }
 
     "pcd" = {
+      "sps-api-mgmt-aat"  = "/subscriptions/70bea6e3-384f-4cf4-b551-743a78d716cd/resourceGroups/rg-sps-platform-aat/providers/Microsoft.ApiManagement/service/sps-api-mgmt-aat/products/try-it-now-cp-crime-prosecution-case-details/groups/administrators"
       "sps-api-mgmt-sbox" = "/subscriptions/bd2864ed-4f3e-45ed-9c6a-8d179674bab1/resourceGroups/rg-sps-platform-sbox/providers/Microsoft.ApiManagement/service/sps-api-mgmt-sbox/products/try-it-now-cp-crime-prosecution-case-details/groups/administrators"
       "sps-api-mgmt-demo" = "/subscriptions/058bf954-ac1f-462b-bca4-42a30314bd74/resourceGroups/rg-sps-platform-demo/providers/Microsoft.ApiManagement/service/sps-api-mgmt-demo/products/try-it-now-cp-crime-prosecution-case-details/groups/administrators"
       "sps-api-mgmt-prod" = "/subscriptions/890625e2-7a8b-445c-81b4-8044a062cef3/resourceGroups/rg-sps-platform-prod/providers/Microsoft.ApiManagement/service/sps-api-mgmt-prod/products/try-it-now-cp-crime-prosecution-case-details/groups/administrators"
     }
 
     "dl" = {
+      "sps-api-mgmt-aat"  = "/subscriptions/70bea6e3-384f-4cf4-b551-743a78d716cd/resourceGroups/rg-sps-platform-aat/providers/Microsoft.ApiManagement/service/sps-api-mgmt-aat/products/try-it-now-cp-crime-defendant-details/groups/administrators"
       "sps-api-mgmt-sbox" = "/subscriptions/bd2864ed-4f3e-45ed-9c6a-8d179674bab1/resourceGroups/rg-sps-platform-sbox/providers/Microsoft.ApiManagement/service/sps-api-mgmt-sbox/products/try-it-now-cp-crime-defendant-details/groups/administrators"
       "sps-api-mgmt-demo" = "/subscriptions/058bf954-ac1f-462b-bca4-42a30314bd74/resourceGroups/rg-sps-platform-demo/providers/Microsoft.ApiManagement/service/sps-api-mgmt-demo/products/try-it-now-cp-crime-defendant-details/groups/administrators"
       "sps-api-mgmt-prod" = "/subscriptions/890625e2-7a8b-445c-81b4-8044a062cef3/resourceGroups/rg-sps-platform-prod/providers/Microsoft.ApiManagement/service/sps-api-mgmt-prod/products/try-it-now-cp-crime-defendant-details/groups/administrators"
