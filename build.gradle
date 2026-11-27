@@ -2,14 +2,14 @@ plugins {
   id 'application'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.7'
-  id 'org.springframework.boot' version '4.1.2'
+  id 'org.springframework.boot' version '4.2.0'
   // https://github.com/hmcts/gradle-java-plugin
   id 'uk.gov.hmcts.java' version '0.12.70'
   // The CNP pipeline runs `./gradlew sonarqube` unconditionally. Without this plugin the task
   // does not exist and the build fails with "Task 'sonarqube' not found in root project", after
   // the image has already been pushed - so it reads as a late failure rather than a missing
   // plugin. Version pinned to try-slc's.
-  id 'org.sonarqube' version '7.5.0.8588'
+  id 'org.sonarqube' version '7.6.0.18749'
 }
 
 // Sonar reads the XML report and nothing else; without this it logs "JaCoCo report task detected,
@@ -127,8 +127,8 @@ dependencies {
   implementation 'org.owasp.encoder:encoder:1.6.0'
   implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
 
-  compileOnly 'org.projectlombok:lombok:1.18.46'
-  annotationProcessor 'org.projectlombok:lombok:1.18.46'
+  compileOnly 'org.projectlombok:lombok:1.18.48'
+  annotationProcessor 'org.projectlombok:lombok:1.18.48'
 
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testImplementation 'org.springframework.boot:spring-boot-testcontainers'
