@@ -55,3 +55,11 @@ variable "additional_managed_identities_access" {
 variable "create_managed_identity" {
   default = true
 }
+
+variable "log_analytics_retention_days" {
+  default = 30
+}
+
+variable "log_analytics_daily_quota_gb" {
+  default = 1
+}
