@@ -34,7 +34,7 @@ gh api -X PUT /repos/hmcts/amp-try-it-now/topics -f 'names[]=jenkins-cft-a-c'
 ```
 
 **`team-config.yml`** — nothing to do. `amp` is already registered (team "API Marketplace",
-namespace `amp`, build notices to `#api-marketplace-build-notices`). It is product-scoped; there
+namespace `amp`, build notices to `#amp-ci-alerts`). It is product-scoped; there
 is no per-component entry.
 
 **`terraform-infra-approvals/amp-try-it-now.json`** — **not needed as `infrastructure/` stands
